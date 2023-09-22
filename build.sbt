@@ -25,7 +25,21 @@ libraryDependencies ++= Seq(
   "co.fs2" %% "fs2-core" % "3.9.2",
   "co.fs2" %% "fs2-io" % "3.9.2",
   "co.fs2" %%"fs2-core"%"3.9.2",
-  "org.gnieh" %%"fs2-data-xml"%"1.8.0"
+  "org.gnieh" %%"fs2-data-xml"%"1.8.0",
+  "com.lihaoyi" %% "utest" % "0.8.1" % Test,
 )
+
+publishTo := {
+  if (isSnapshot.value)
+    Some("Sonatype Snapshots Nexus" at "https://oss.sonatype.org/content/repositories/snapshots")
+  else
+    Some("Sonatype Snapshots Nexus" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+}
+publishConfiguration := publishConfiguration.value.withOverwrite(true)
+publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
+pomIncludeRepository := { _ => false }
+publishMavenStyle := true
+
+testFrameworks += new TestFramework("utest.runner.Framework")
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
