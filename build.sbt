@@ -24,6 +24,7 @@ libraryDependencies ++= Seq(
   "co.fs2" %% "fs2-io" % "3.9.2",
   "co.fs2" %%"fs2-core"%"3.9.2",
   "org.gnieh" %%"fs2-data-xml"%"1.8.0",
+  "com.github.marklister" %% "base64" % "0.3.0",
   "com.lihaoyi" %% "utest" % "0.8.1" % Test,
 )
 

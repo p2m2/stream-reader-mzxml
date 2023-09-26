@@ -232,20 +232,20 @@ object CompressionType extends Enumeration {
 
 case class Peaks(
                   valueBase64 : String,
-                  precision : Precision.Value,
+                  precision : Option[Precision.Value],
                   byteOrder : String,
-                  contentType : ContentType.Value,
-                  compressionType : CompressionType.Value,
-                  compressedLen : Int)
+                  contentType : Option[ContentType.Value],
+                  compressionType : Option[CompressionType.Value],
+                  compressedLen : Option[Int])
 
 object Peaks  {
   implicit val reader: XmlReader[Peaks] = (
     ( __ ).read[String],
-    attribute("precision")(enum(Precision)).default(Precision.unknown),
+    attribute("precision")(enum(Precision)).default(Precision.unknown).optional,
     attribute[String]("byteOrder"),
-    attribute("contentType")(enum(ContentType)).default(ContentType.unknown),
-    attribute("compressionType")(enum(CompressionType)).default(CompressionType.unknown),
-    attribute[Int]("compressedLen")
+    attribute("contentType")(enum(ContentType)).default(ContentType.unknown).optional,
+    attribute("compressionType")(enum(CompressionType)).default(CompressionType.unknown).optional,
+    attribute[Int]("compressedLen").optional
   ).mapN(apply)
 }
 
@@ -310,26 +310,45 @@ object ScanProperties {
   ).mapN(apply)
 }
 
-case class Scan(
+case class Scan1(
                  properties : ScanProperties,
                  precursorMz: Seq[mzxml.PrecursorMz] = Nil,
                  maldi: Option[mzxml.Maldi] = None,
                  peaks: Seq[mzxml.Peaks] = Nil,
                  scansequence: Seq[mzxml.ScanSequence] = Nil,
-                 scan: Seq[mzxml.Scan] = Nil
+                 scan: Seq[mzxml.Scan2] = Nil
                  )
 
-object Scan {
-    implicit val reader: XmlReader[Scan] = (
-      ( __ ).read[ScanProperties],
+object Scan1 {
+    implicit val reader: XmlReader[Scan1] = (
+        __.read[ScanProperties],
       ( __ \ "precursorMz").read(seq[PrecursorMz]),
       ( __ \ "maldi").read[Maldi].optional,
       ( __ \ "peaks").read(seq[Peaks]),
       ( __ \ "scanSequence").read(seq[ScanSequence]),
-      ( __ \ "scan").read(seq[mzxml.Scan])
-    ).mapN(apply _)
+      ( __ \ "scan").read(seq[mzxml.Scan2])
+    ).mapN(apply)
 }
 
+case class Scan2(
+                 properties : ScanProperties,
+                 precursorMz: Seq[mzxml.PrecursorMz] = Nil,
+                 maldi: Option[mzxml.Maldi] = None,
+                 peaks: Seq[mzxml.Peaks] = Nil,
+                 scansequence: Seq[mzxml.ScanSequence] = Nil,
+                 scan: Seq[mzxml.Scan1] = Nil
+               )
+
+object Scan2 {
+  implicit val reader: XmlReader[Scan2] = (
+    __.read[ScanProperties],
+    ( __ \ "precursorMz").read(seq[PrecursorMz]),
+    ( __ \ "maldi").read[Maldi].optional,
+    ( __ \ "peaks").read(seq[Peaks]),
+    ( __ \ "scanSequence").read(seq[ScanSequence]),
+    ( __ \ "scan").read(seq[mzxml.Scan1])
+  ).mapN(apply)
+}
 
 /*
 case class Separation(separationTechnique: Seq[mzxml.SeparationTechniqueType] = Nil)
