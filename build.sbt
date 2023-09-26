@@ -19,9 +19,7 @@ version := "1.0"
 
 
 libraryDependencies ++= Seq(
-  "org.scalaxb" %% "scalaxb" % "1.11.1",
-  "org.scala-lang.modules" %% "scala-xml" % "2.1.0",
-  "javax.xml.bind" % "jaxb-api" % "2.3.1",
+ "com.lucidchart" %% "xtract" % "2.3.0",
   "co.fs2" %% "fs2-core" % "3.9.2",
   "co.fs2" %% "fs2-io" % "3.9.2",
   "co.fs2" %%"fs2-core"%"3.9.2",

@@ -1,7 +1,9 @@
 import cats.Show
-import fs2.Stream
+
 import cats.effect.{IO, IOApp}
 import cats.effect.unsafe.implicits.global
+
+import fs2.Stream
 import fs2._
 import fs2.data.xml
 import fs2.io.file.{Files, Flags, Path}
@@ -9,11 +11,10 @@ import fs2.data.xml._
 import fs2.data.xml.dom.DocumentBuilder
 import fs2.data.xml.xpath.{XPath, XPathParser}
 import fs2.data.xml.xpath.literals._
-import mzxml.ScanOrigin
 
 import java.nio.charset.Charset
 
-
+import com.lucidchart.open.xtract.XmlReader
 import scala.xml.{NodeSeq, XML}
 
 object Main extends IOApp.Simple {
@@ -50,34 +51,39 @@ object Main extends IOApp.Simple {
 
  //   eventXmlsIo.map( eventXmls => eventXmls.map( e => scalaxb.fromXML[mzxml.Scan](XML.loadString(e))) )
   }
-
+/*
   val msRun: Stream[IO, mzxml.MsRun] =
     converter(xpath"//msRun")
-      .map(eventXml => scalaxb.fromXML[mzxml.MsRun](XML.loadString(eventXml)))
+      .map(eventXml => scalaxb.fromXML[mzxml.MsRun](XML.loadString(eventXml)))*/
 
-  val msInstrument: Stream[IO, mzxml.MsInstrument] =
-    converter(xpath"//msInstrument")
+  def ontologyTable(tag : String): Stream[IO, Option[mzxml.Software]] =
+    converter(xpath"//software")
       .map(eventXml => {
-        println("==================")
         println(eventXml)
-        println("==================")
-        scalaxb.fromXML[mzxml.MsInstrument](XML.loadString(eventXml))
+        XmlReader.of[mzxml.Software].read(XML.loadString(eventXml)).toOption
       })
 
-  val dataProcessing: Stream[IO, mzxml.DataProcessing] =
-    converter(xpath"/mzXML/msRun/dataProcessing")
-      .map(eventXml => scalaxb.fromXML[mzxml.DataProcessing](XML.loadString(eventXml)))
+  val msInstrument: Stream[IO, Option[mzxml.MsInstrument]] =
+    converter(xpath"//msInstrument")
+      .map(eventXml => {
+        println(eventXml)
+        XmlReader.of[mzxml.MsInstrument].read(XML.loadString(eventXml)).toOption
+      })
 
+  val dataProcessing: Stream[IO, Option[mzxml.DataProcessing]] =
+    converter(xpath"//dataProcessing")
+      .map(eventXml => XmlReader.of[mzxml.DataProcessing].read(XML.loadString(eventXml)).toOption)
+/*
   val scans : Stream[IO, mzxml.Scan] =
     converter(xpath"//scan")
-      .map( eventXml => scalaxb.fromXML[mzxml.Scan](XML.loadString(eventXml)) )
+      .map( eventXml => scalaxb.fromXML[mzxml.Scan](XML.loadString(eventXml)) )*/
 
   def run: IO[Unit] =
     {
       IO {
         println(
-          scans
-            .filter(x => x.num == 10)
+          dataProcessing
+           // .filter(x => x.num == 10)
             .compile
             .toList
             .unsafeRunSync())

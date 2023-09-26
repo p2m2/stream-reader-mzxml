@@ -1,6 +1,6 @@
 
 
-import Main.{scans}
+import Main._
 import cats.effect.unsafe.implicits.global
 import utest.{TestSuite, Tests, test}
 
@@ -12,7 +12,7 @@ object MainCTest extends TestSuite {
      */
     test("") {
       println("Hello")
-      val r = scans
+      val r = msInstrument
         .compile
         .drain
         .unsafeRunSync()
