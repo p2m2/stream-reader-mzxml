@@ -129,24 +129,12 @@ object MzXMLTagsTest extends TestSuite {
           // LEN(MZ) => 74
           //MZ[0] => 129.02807617
           //INTE[0] => 6.99214268
-          import com.github.marklister.base64.Base64._
-          val arr: Array[Byte] = scan.peaks.head.valueBase64.toByteArray
           println("peaks count:", scan.properties.peaksCount)
 
-          import java.nio._
-
-          val buffer  = ByteBuffer.wrap(arr).order(ByteOrder.BIG_ENDIAN);
-          val fb : FloatBuffer = buffer.asFloatBuffer();
-          val values = new Array[Float](arr.length / 4)
-          fb.get(values)
-          val mzs : Seq[Float] = values.zipWithIndex.filter(_._2 % 2 == 0).map(_._1)
-          val intensities : Seq[Float] = values.zipWithIndex.filter(_._2 % 2 != 0).map(_._1)
-
-          println(mzs)
-          println(intensities)
+          println(scan.peaks.head.mzsIntensitiesPair)
 
           /* retention time */
-          println(scan.properties.retentionTime.get.getSeconds/60.0)
+          println(scan.properties.retentionTime.get/60.0)
 
         //arr.foreach(x => println(Integer.reverseBytes(x).toDouble))
         case None => assert(false)

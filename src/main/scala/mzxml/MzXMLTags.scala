@@ -87,8 +87,6 @@ case class MsInstrument(
 object MsInstrument {
 
   implicit val reader: XmlReader[MsInstrument] = {
-    println("Hello Wolrd")
-    println(attribute[String]("msInstrumentID").optional.toString)
    (
     attribute[String]("msInstrumentID").optional,
     (__ \ "msManufacturer").read[mzxml.OntologyEntryTypable],
@@ -200,13 +198,11 @@ object Maldi  {
 
 
 object Precision extends Enumeration {
-  val unknown = Value("unknown")
   val Number32 = Value("32")
   val Number64 = Value("64")
 }
 
 object ContentType extends Enumeration {
-  val unknown = Value("unknown")
   val Mu47zu45int = Value("m/z-int")
   val Mu47z = Value("m/z")
   val Mu47zruler = Value("m/z ruler")
@@ -225,28 +221,60 @@ object Polarity extends Enumeration {
 }
 
 object CompressionType extends Enumeration {
-  val unknown = Value("unknown")
   val NoneType = Value("none")
   val Zlib = Value("zlib")
 }
 
+object PairOrder extends Enumeration {
+  val unknown = Value("m/z-int")
+}
+
 case class Peaks(
-                  valueBase64 : String,
-                  precision : Option[Precision.Value],
+                  mzsIntensitiesPair : Seq[(Double,Double)], // m/z - intensities
+                  precision : Precision.Value,
                   byteOrder : String,
-                  contentType : Option[ContentType.Value],
+                  pairOrder : Option[ContentType.Value],
                   compressionType : Option[CompressionType.Value],
                   compressedLen : Option[Int])
 
 object Peaks  {
-  implicit val reader: XmlReader[Peaks] = (
-    ( __ ).read[String],
-    attribute("precision")(enum(Precision)).default(Precision.unknown).optional,
-    attribute[String]("byteOrder"),
-    attribute("contentType")(enum(ContentType)).default(ContentType.unknown).optional,
-    attribute("compressionType")(enum(CompressionType)).default(CompressionType.unknown).optional,
-    attribute[Int]("compressedLen").optional
-  ).mapN(apply)
+
+  private def mzIntensitiesReader(strBase64 : String, precision : Precision.Value) : Seq[(Double,Double)] = {
+    import com.github.marklister.base64.Base64._
+    import java.nio._
+
+    val arr: Array[Byte] = strBase64.toByteArray
+    val buffer = ByteBuffer.wrap(arr).order(ByteOrder.BIG_ENDIAN);
+
+   val (mzs, intensities) = precision match {
+      case Precision.Number32 =>
+        val values = new Array[Float](arr.length / 4)
+        val fb: FloatBuffer = buffer.asFloatBuffer();
+        fb.get(values)
+        val mzs: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 == 0).map(_._1.toDouble)
+        val intensities: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 != 0).map(_._1.toDouble)
+        (mzs,intensities)
+      case Precision.Number64 =>
+        val values = new Array[Double](arr.length / 8)
+        val db: DoubleBuffer = buffer.asDoubleBuffer();
+        db.get(values)
+        val mzs: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 == 0).map(_._1)
+        val intensities: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 != 0).map(_._1)
+        (mzs,intensities)
+    }
+    mzs.zipWithIndex.map( x => (x._1,intensities(x._2)))
+  }
+
+  implicit val reader: XmlReader[Peaks] = {
+    (
+      (__).read[String].map(base64val => mzIntensitiesReader(base64val,Precision.Number32)),
+      attribute("precision")(enum(Precision)).default(Precision.Number32),
+      attribute[String]("byteOrder"),
+      attribute("pairOrder")(enum(ContentType)).default(ContentType.Mu47zu45int).optional,
+      attribute("compressionType")(enum(CompressionType)).default(CompressionType.NoneType).optional,
+      attribute[Int]("compressedLen").optional
+    ).mapN(apply)
+  }
 }
 
 case class ScanSequence(nameValue: String, comment: Option[String] = None)
@@ -268,7 +296,7 @@ case class ScanProperties(
                          centroided: Option[Boolean],
                          deisotoped: Option[Boolean],
                          chargeDeconvoluted: Option[Boolean],
-                         retentionTime: Option[Duration],
+                         retentionTime: Option[Int],   // in seconds
                          ionisationEnergy: Option[Double],
                          collisionEnergy: Option[Double],
                          cidGasPressure: Option[Double],
@@ -294,7 +322,7 @@ object ScanProperties {
     attribute[Boolean]("centroided").optional,
     attribute[Boolean]("deisotoped").optional,
     attribute[Boolean]("chargeDeconvoluted").optional,
-    attribute[String]("retentionTime").map(DatatypeFactory.newInstance().newDuration).optional,
+    attribute[String]("retentionTime").map(DatatypeFactory.newInstance().newDuration).map(_.getSeconds).optional,
     attribute[Double]("ionisationEnergy").optional,
     attribute[Double]("collisionEnergy").optional,
     attribute[Double]("cidGasPressure").optional,
