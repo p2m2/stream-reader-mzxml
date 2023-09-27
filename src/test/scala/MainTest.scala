@@ -11,7 +11,6 @@ object MainCTest extends TestSuite {
      * Generation of dump
      */
     test("") {
-      println("Hello")
       val r = msInstrument
         .compile
         .drain

@@ -11,13 +11,134 @@ import utest.{TestSuite, Tests, test}
 
 import java.nio.ByteOrder
 import java.util.Calendar
+import scala.math.abs
 import scala.xml.{Elem, XML}
 
 object MzXMLTagsTest extends TestSuite {
   val tests: Tests = Tests {
-    /**
-     * Generation of dump
-     */
+
+    test("mzXML") {
+      val xml : Elem = <mzXML xmlns="http://sashimi.sourceforge.net/schema_revision/mzXML_3.0"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="http://sashimi.sourceforge.net/schema_revision/mzXML_3.0 http://sashimi.sourceforge.net/schema_revision/mzXML_3.0/mzXML_idx_3.0.xsd">
+        <msRun scanCount="9181" startTime="PT480.065S" endTime="PT6598.78S">
+          <parentFile fileName="R1_RG59_B4_1.RAW" fileType="RAWData" fileSha1="8710fc9a36c249bc85b5a4ce560b03d5aac319cc"/>
+          <msInstrument>
+            <msManufacturer category="msManufacturer" value="Thermo Scientific"/>
+            <msModel category="msModel" value="LTQ Orbitrap"/>
+            <msIonisation category="msIonisation" value="NSI"/>
+            <msMassAnalyzer category="msMassAnalyzer" value="FTMS"/>
+            <msDetector category="msDetector" value="unknown"/>
+            <software type="acquisition" name="Xcalibur" version="2.4 SP1"/>
+          </msInstrument>
+          <dataProcessing centroided="1">
+            <software type="conversion" name="ReAdW" version="4.0.2(build Jul  1 2008 14:23:37)"/>
+          </dataProcessing>
+          <scan num="1"
+                msLevel="1"
+                peaksCount="221"
+                polarity="+"
+                scanType="Full"
+                filterLine="FTMS + p NSI Full ms [375.00-2000.00]"
+                retentionTime="PT480.065S"
+                lowMz="376.83"
+                highMz="1979.57"
+                basePeakMz="1125.3"
+                basePeakIntensity="10168"
+                totIonCurrent="175256">
+            <peaks precision="32"
+                   byteOrder="network"
+                   pairOrder="m/z-int">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</peaks>
+          </scan>
+          </msRun>
+        <index>
+          <offset id="9158">69137406</offset>
+          <offset id="9159">69142030</offset>
+          <offset id="9160">69146151</offset>
+          <offset id="9161">69150711</offset>
+          <offset id="9162">69154736</offset>
+          <offset id="9163">69158785</offset>
+          <offset id="9164">69163602</offset>
+          <offset id="9165">69167563</offset>
+          <offset id="9166">69171056</offset>
+          <offset id="9167">69174869</offset>
+          <offset id="9168">69178606</offset>
+          <offset id="9169">69182695</offset>
+          <offset id="9170">69187319</offset>
+          <offset id="9171">69191304</offset>
+          <offset id="9172">69195641</offset>
+          <offset id="9173">69199952</offset>
+          <offset id="9174">69204129</offset>
+          <offset id="9175">69208422</offset>
+          <offset id="9176">69213567</offset>
+          <offset id="9177">69217591</offset>
+          <offset id="9178">69221543</offset>
+          <offset id="9179">69225643</offset>
+          <offset id="9180">69230332</offset>
+          <offset id="9181">69235264</offset>
+        </index>
+        <indexOffset>69239139</indexOffset>
+        <sha1>675c62013537c9907ae0c3d3ac925f9288d49d7b</sha1>
+      </mzXML>
+      val mzXMLPR: ParseResult[MzXML] = XmlReader.of[mzxml.MzXML].read(xml)
+      assert(mzXMLPR.isSuccessful)
+    }
+
+    test("msRun") {
+      val xml : Elem = <msRun scanCount="9181" startTime="PT480.065S" endTime="PT6598.78S">
+        <parentFile fileName="R1_RG59_B4_1.RAW" fileType="RAWData" fileSha1="8710fc9a36c249bc85b5a4ce560b03d5aac319cc"/>
+        <msInstrument>
+          <msManufacturer category="msManufacturer" value="Thermo Scientific"/>
+          <msModel category="msModel" value="LTQ Orbitrap"/>
+          <msIonisation category="msIonisation" value="NSI"/>
+          <msMassAnalyzer category="msMassAnalyzer" value="FTMS"/>
+          <msDetector category="msDetector" value="unknown"/>
+          <software type="acquisition" name="Xcalibur" version="2.4 SP1"/>
+        </msInstrument>
+        <dataProcessing centroided="1">
+          <software type="conversion" name="ReAdW" version="4.0.2(build Jul  1 2008 14:23:37)"/>
+        </dataProcessing>
+        <scan num="1"
+              msLevel="1"
+              peaksCount="221"
+              polarity="+"
+              scanType="Full"
+              filterLine="FTMS + p NSI Full ms [375.00-2000.00]"
+              retentionTime="PT480.065S"
+              lowMz="376.83"
+              highMz="1979.57"
+              basePeakMz="1125.3"
+              basePeakIntensity="10168"
+              totIonCurrent="175256">
+          <peaks precision="32"
+                 byteOrder="network"
+                 pairOrder="m/z-int">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</peaks>
+        </scan>
+        </msRun>
+      val msRunPR: ParseResult[MsRun] = XmlReader.of[mzxml.MsRun].read(xml)
+      assert(msRunPR.isSuccessful)
+      val msRun = msRunPR.getOrElse(null)
+      assert(msRun != null)
+      assert(msRun.scanCount.contains(9181))
+      assert(msRun.startTimeInSeconds.contains(480))
+      assert(msRun.endTimeInSeconds.contains(6598))
+      assert(msRun.parentFile.length == 1)
+      assert(msRun.msInstrument.length == 1)
+      assert(msRun.dataProcessing.length == 1)
+      assert(msRun.scan.length == 1)
+    }
+
+    test("parentFile") {
+      val xml : Elem = <parentFile fileName="R1_RG59_B4_1.RAW" fileType="RAWData" fileSha1="8710fc9a36c249bc85b5a4ce560b03d5aac319cc" />
+      val parentFilePR: ParseResult[ParentFile] = XmlReader.of[mzxml.ParentFile].read(xml)
+      assert(parentFilePR.isSuccessful)
+      val parentFile = parentFilePR.getOrElse(null)
+      assert(parentFile != null)
+      assert(parentFile.fileName == java.net.URI.create("R1_RG59_B4_1.RAW"))
+      assert(parentFile.fileType == FileType.RAWData)
+      assert(parentFile.fileSha1 == "8710fc9a36c249bc85b5a4ce560b03d5aac319cc")
+    }
+
     test("msInstrument") {
       val xml: Elem =
         <msInstrument>
@@ -41,6 +162,13 @@ object MzXMLTagsTest extends TestSuite {
           assert(instrument.software.version=="2.4 SP1")
         }
       }
+    }
+    test("dataProcessing") {
+      val xml : Elem = <dataProcessing centroided="1">
+                          <software type="conversion" name="ReAdW" version="4.0.2(build Jul  1 2008 14:23:37)"/>
+                </dataProcessing>
+      val dataProcessing: ParseResult[DataProcessing] = XmlReader.of[mzxml.DataProcessing].read(xml)
+      assert(dataProcessing.isSuccessful)
     }
     test("scan 1") {
       val xml: Elem = <scan num="1"
@@ -120,23 +248,13 @@ object MzXMLTagsTest extends TestSuite {
       </scan>
 
       val scanPR: ParseResult[Scan1] = XmlReader.of[mzxml.Scan1].read(xml)
-      // println(scanPR)
       assert(scanPR.isSuccessful)
       scanPR.toOption match {
         case Some(scan) =>
-          //https://sashimi.sourceforge.net/schema_revision/mzXML_2.1/Doc/mzXML_2.0_tutorial.pdf
-          //println("=============>",scan.peaks)
-          // LEN(MZ) => 74
-          //MZ[0] => 129.02807617
-          //INTE[0] => 6.99214268
-          println("peaks count:", scan.properties.peaksCount)
-
-          println(scan.peaks.head.mzsIntensitiesPair)
-
-          /* retention time */
-          println(scan.properties.retentionTime.get/60.0)
-
-        //arr.foreach(x => println(Integer.reverseBytes(x).toDouble))
+          assert(scan.properties.peaksCount ==  scan.peaks.head.mzsIntensitiesPair.length)
+          assert(abs(scan.peaks.head.mzsIntensitiesPair.head._1 - 129.028)<0.1)
+          assert(abs(scan.peaks.head.mzsIntensitiesPair.head._2 - 6.992)<0.1)
+          assert(scan.properties.retentionTimeInSeconds.get == 946)
         case None => assert(false)
       }
 

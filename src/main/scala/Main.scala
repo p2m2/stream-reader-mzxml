@@ -59,14 +59,12 @@ object Main extends IOApp.Simple {
   def ontologyTable(tag : String): Stream[IO, Option[mzxml.Software]] =
     converter(xpath"//software")
       .map(eventXml => {
-        println(eventXml)
         XmlReader.of[mzxml.Software].read(XML.loadString(eventXml)).toOption
       })
 
   val msInstrument: Stream[IO, Option[mzxml.MsInstrument]] =
     converter(xpath"//msInstrument")
       .map(eventXml => {
-        println(eventXml)
         XmlReader.of[mzxml.MsInstrument].read(XML.loadString(eventXml)).toOption
       })
 
@@ -81,12 +79,11 @@ object Main extends IOApp.Simple {
   def run: IO[Unit] =
     {
       IO {
-        println(
           dataProcessing
            // .filter(x => x.num == 10)
             .compile
             .toList
-            .unsafeRunSync())
+            .unsafeRunSync()
       }
       //scans.compile.drain
     }

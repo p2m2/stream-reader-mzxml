@@ -6,10 +6,51 @@ import cats.syntax.all._
 
 import javax.xml.datatype.{DatatypeFactory, Duration}
 
+case class MzXML(
+                  msRun : mzxml.MsRun,
+                  index : Seq[mzxml.IndexScan] = Nil,
+                  indexOffset : Option[mzxml.IndexOffset],
+                  sha1: Option[String] = None
+                )
+
+object MzXML {
+  implicit val reader: XmlReader[MzXML] = (
+    (__ \ "msRun").read[mzxml.MsRun],
+    (__ \ "index").read(seq[mzxml.IndexScan]),
+    (__ \ "indexOffset").read[mzxml.IndexOffset].optional,
+    attribute[String]("sha1").optional
+  ).mapN(apply)
+}
+case class MsRun(
+             scanCount : Option[Int],
+             startTimeInSeconds : Option[Int],
+             endTimeInSeconds : Option[Int],
+             parentFile: Seq[mzxml.ParentFile] = Nil,
+             msInstrument: Seq[mzxml.MsInstrument] = Nil,
+             dataProcessing: Seq[mzxml.DataProcessing] = Nil,
+         //    separation: Option[mzxml.Separation] = None,
+         //    spotting: Option[mzxml.Spotting] = None,
+             scan: Seq[mzxml.Scan1] = Nil,
+             sha1: Option[String] = None,
+           )
+
+object MsRun {
+  implicit val reader: XmlReader[MsRun] = (
+    attribute[String]("scanCount").map(_.toInt).optional,
+    attribute[String]("startTime").map(DatatypeFactory.newInstance().newDuration).map(_.getSeconds).optional,
+    attribute[String]("endTime").map(DatatypeFactory.newInstance().newDuration).map(_.getSeconds).optional,
+    (__ \ "parentFile").read(seq[mzxml.ParentFile]),
+    (__ \ "msInstrument")read(seq[mzxml.MsInstrument]),
+    (__ \ "dataProcessing")read(seq[mzxml.DataProcessing]),
+    (__ \ "scan")read(seq[mzxml.Scan1]),
+    attribute[String]("sha1").optional
+  ).mapN(apply)
+}
+
 object FileType extends Enumeration {
-  val unknown = Value("unknown")
-  val RAWData = Value("RAWData")
-  val ProcessedData = Value("processedData")
+  val unknown: FileType.Value = Value("unknown")
+  val RAWData: FileType.Value = Value("RAWData")
+  val ProcessedData : FileType.Value = Value("processedData")
 }
 
 case class ParentFile(
@@ -47,16 +88,16 @@ object Software {
 }
 
 
-case class Operator(first : String,last : String,phone : String,email : Option[String] = None,URI : java.net.URI)
+case class Operator(first : String,last : String,phone : Option[String],email : Option[String] = None,URI : java.net.URI)
 
 object Operator {
   
-  def validateEmail(email: String): Boolean = email contains "@"
+  private def validateEmail(email: String): Boolean = email contains "@"
 
   implicit val reader: XmlReader[Operator] = (
     attribute[String]("first"),
     attribute[String]("last"),
-    attribute[String]("phone"),
+    attribute[String]("phone").optional,
     attribute[String]("email").filter(validateEmail _).optional,
     attribute[String]("URI").map(java.net.URI.create)
   ).mapN(apply)
@@ -287,28 +328,28 @@ object ScanSequence {
 }
 
 case class ScanProperties(
-                         num: BigInt,
-                         msLevel: Int,
-                         peaksCount: BigInt,
-                         polarity: Polarity.Value,
-                         scanType: ScanType.Value,
-                         filterLine: String,
-                         centroided: Option[Boolean],
-                         deisotoped: Option[Boolean],
-                         chargeDeconvoluted: Option[Boolean],
-                         retentionTime: Option[Int],   // in seconds
-                         ionisationEnergy: Option[Double],
-                         collisionEnergy: Option[Double],
-                         cidGasPressure: Option[Double],
-                         startMz: Option[Double],
-                         endMz: Option[Double],
-                         lowMz: Option[Double],
-                         highMz: Option[Double],
-                         basePeakMz: Option[Double],
-                         basePeakIntensity: Option[Double],
-                         totIonCurrent : Option[Double],
-                         msInstrumentID : Option[Int],
-                         compensationVoltage : Option[Double],
+                           num: BigInt,
+                           msLevel: Int,
+                           peaksCount: BigInt,
+                           polarity: Polarity.Value,
+                           scanType: ScanType.Value,
+                           filterLine: String,
+                           centroided: Option[Boolean],
+                           deisotoped: Option[Boolean],
+                           chargeDeconvoluted: Option[Boolean],
+                           retentionTimeInSeconds: Option[Int], // in seconds
+                           ionisationEnergy: Option[Double],
+                           collisionEnergy: Option[Double],
+                           cidGasPressure: Option[Double],
+                           startMz: Option[Double],
+                           endMz: Option[Double],
+                           lowMz: Option[Double],
+                           highMz: Option[Double],
+                           basePeakMz: Option[Double],
+                           basePeakIntensity: Option[Double],
+                           totIonCurrent : Option[Double],
+                           msInstrumentID : Option[Int],
+                           compensationVoltage : Option[Double],
                        )
 
 object ScanProperties {
@@ -339,7 +380,7 @@ object ScanProperties {
 }
 
 case class Scan1(
-                 properties : ScanProperties,
+                 properties : mzxml.ScanProperties,
                  precursorMz: Seq[mzxml.PrecursorMz] = Nil,
                  maldi: Option[mzxml.Maldi] = None,
                  peaks: Seq[mzxml.Peaks] = Nil,
@@ -350,16 +391,16 @@ case class Scan1(
 object Scan1 {
     implicit val reader: XmlReader[Scan1] = (
         __.read[ScanProperties],
-      ( __ \ "precursorMz").read(seq[PrecursorMz]),
-      ( __ \ "maldi").read[Maldi].optional,
-      ( __ \ "peaks").read(seq[Peaks]),
-      ( __ \ "scanSequence").read(seq[ScanSequence]),
+      ( __ \ "precursorMz").read(seq[mzxml.PrecursorMz]),
+      ( __ \ "maldi").read[mzxml.Maldi].optional,
+      ( __ \ "peaks").read(seq[mzxml.Peaks]),
+      ( __ \ "scanSequence").read(seq[mzxml.ScanSequence]),
       ( __ \ "scan").read(seq[mzxml.Scan2])
     ).mapN(apply)
 }
 
 case class Scan2(
-                 properties : ScanProperties,
+                 properties : mzxml.ScanProperties,
                  precursorMz: Seq[mzxml.PrecursorMz] = Nil,
                  maldi: Option[mzxml.Maldi] = None,
                  peaks: Seq[mzxml.Peaks] = Nil,
@@ -368,7 +409,7 @@ case class Scan2(
                )
 
 object Scan2 {
-  implicit val reader: XmlReader[Scan2] = (
+  implicit val reader: XmlReader[mzxml.Scan2] = (
     __.read[ScanProperties],
     ( __ \ "precursorMz").read(seq[PrecursorMz]),
     ( __ \ "maldi").read[Maldi].optional,
@@ -378,20 +419,30 @@ object Scan2 {
   ).mapN(apply)
 }
 
-/*
-case class Separation(separationTechnique: Seq[mzxml.SeparationTechniqueType] = Nil)
-      
-      
+case class Offset(id : Int, value : Int)
 
+object Offset {
+  implicit val reader: XmlReader[mzxml.Offset] = ( attribute[Int]("id"), __.read[Int] ).mapN(apply)
+}
+case class IndexScan(offset : Seq[mzxml.Offset]= Nil)
+
+object IndexScan {
+  implicit val reader: XmlReader[IndexScan] = (__ \ "offset").read(seq[mzxml.Offset]).map(apply)
+}
+
+case class IndexOffset(value : Int)
+
+object IndexOffset {
+  implicit val reader: XmlReader[mzxml.IndexOffset] =
+    (__ \ "indexOffset").read[Int].map(apply)
+}
+
+/*
 
 case class Orientation(attributes: Map[String, scalaxb.DataRecord[Any]] = Map.empty) {
   lazy val firstSpotID = attributes("@firstSpotID").as[String]
   lazy val secondSpotID = attributes("@secondSpotID").as[String]
 }
-
-      
-      
-
 
 case class Pattern(spottingPattern: mzxml.OntologyEntryTypable,
   orientation: mzxml.Orientation)
@@ -407,10 +458,6 @@ case class Spot(maldiMatrix: mzxml.OntologyEntryTypable,
   lazy val spotDiameter = attributes.get("@spotDiameter") map { _.as[BigInt]}
 }
 
-      
-      
-
-
 case class Plate(plateManufacturer: mzxml.OntologyEntryTypable,
   plateModel: mzxml.OntologyEntryTypable,
   pattern: Option[mzxml.Pattern] = None,
@@ -420,9 +467,6 @@ case class Plate(plateManufacturer: mzxml.OntologyEntryTypable,
   lazy val spotXCount = attributes("@spotXCount").as[BigInt]
   lazy val spotYCount = attributes("@spotYCount").as[BigInt]
 }
-
-      
-      
 
 
 case class Robot(robotManufacturer: mzxml.OntologyEntryTypable,
