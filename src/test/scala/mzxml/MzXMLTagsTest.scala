@@ -10,6 +10,7 @@ import fs2.data.xml.xpath.literals._
 import utest.{TestSuite, Tests, test}
 
 import java.nio.ByteOrder
+import java.util.Calendar
 import scala.xml.{Elem, XML}
 
 object MzXMLTagsTest extends TestSuite {
@@ -129,12 +130,11 @@ object MzXMLTagsTest extends TestSuite {
           //MZ[0] => 129.02807617
           //INTE[0] => 6.99214268
           import com.github.marklister.base64.Base64._
-          val arr: Array[Byte] = scan.peaks(0).valueBase64.toByteArray
+          val arr: Array[Byte] = scan.peaks.head.valueBase64.toByteArray
           println("peaks count:", scan.properties.peaksCount)
-          println("array size :", arr.length)
+
           import java.nio._
 
-          //println(bbuf.asFloatBuffer().array().mkString("Array(", ", ", ")"))
           val buffer  = ByteBuffer.wrap(arr).order(ByteOrder.BIG_ENDIAN);
           val fb : FloatBuffer = buffer.asFloatBuffer();
           val values = new Array[Float](arr.length / 4)
@@ -142,10 +142,12 @@ object MzXMLTagsTest extends TestSuite {
           val mzs : Seq[Float] = values.zipWithIndex.filter(_._2 % 2 == 0).map(_._1)
           val intensities : Seq[Float] = values.zipWithIndex.filter(_._2 % 2 != 0).map(_._1)
 
-          /* retention time */
-
           println(mzs)
           println(intensities)
+
+          /* retention time */
+          println(scan.properties.retentionTime.get.getSeconds/60.0)
+
         //arr.foreach(x => println(Integer.reverseBytes(x).toDouble))
         case None => assert(false)
       }
