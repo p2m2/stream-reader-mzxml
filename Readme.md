@@ -1,4 +1,7 @@
 
+## test
+
+sbt "run example.mzXML"
 
 ## specifications
 
