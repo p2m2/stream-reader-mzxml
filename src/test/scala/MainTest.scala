@@ -1,9 +1,8 @@
 
 
 import Main._
-import cats.effect.unsafe.implicits.global
 import utest.{TestSuite, Tests, test}
-
+import cats.effect.unsafe.implicits.global
 object MainCTest extends TestSuite {
 
   val tests: Tests = Tests {
@@ -11,9 +10,13 @@ object MainCTest extends TestSuite {
      * Generation of dump
      */
     test("") {
-      val r = msInstrument
+      val r =
+        msRun(getClass.getResource("Orbitrap_Exploris_240_precision64.mzXML").getPath).map {
+          case Some(run) => Some(run.scan.filter(s => s.properties.num < 20))
+          case None => None
+        }
         .compile
-        .drain
+        .toList
         .unsafeRunSync()
       println(r)
     }

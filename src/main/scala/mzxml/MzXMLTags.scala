@@ -3,8 +3,10 @@ package mzxml
 import com.lucidchart.open.xtract.{XmlReader, __}
 import com.lucidchart.open.xtract.XmlReader._
 import cats.syntax.all._
+import mzxml.Precision.Value
 
 import javax.xml.datatype.{DatatypeFactory, Duration}
+import scala.xml.NodeSeq
 
 case class MzXML(
                   msRun : mzxml.MsRun,
@@ -54,14 +56,14 @@ object FileType extends Enumeration {
 }
 
 case class ParentFile(
-                       fileName : java.net.URI,
+                       fileName : String,
                        fileType : FileType.Value,
                        fileSha1 : String
                      )
 
 object ParentFile {
   implicit val reader: XmlReader[ParentFile] = (
-    attribute[String]("fileName").map(java.net.URI.create),
+    attribute[String]("fileName"),
     attribute("fileType")(enum(FileType)).default(FileType.unknown),
     attribute[String]("fileSha1")
   ).mapN(apply)
@@ -279,13 +281,25 @@ case class Peaks(
                   compressedLen : Option[Int])
 
 object Peaks  {
+  import java.util.zip.{Inflater, Deflater} // Zlib library
+  def decompress(inData: Array[Byte]): Array[Byte] = {
+    val inflater = new Inflater()
+    inflater.setInput(inData)
+    val decompressedData = new Array[Byte](inData.size * 2)
+    var count = inflater.inflate(decompressedData)
+    var finalData = decompressedData.take(count)
+    while (count > 0) {
+      count = inflater.inflate(decompressedData)
+      finalData = finalData ++ decompressedData.take(count)
+    }
+    return finalData
+  }
 
   private def mzIntensitiesReader(strBase64 : String, precision : Precision.Value) : Seq[(Double,Double)] = {
     import com.github.marklister.base64.Base64._
     import java.nio._
-
     val arr: Array[Byte] = strBase64.toByteArray
-    val buffer = ByteBuffer.wrap(arr).order(ByteOrder.BIG_ENDIAN);
+    val buffer = ByteBuffer.wrap(arr).order(ByteOrder.LITTLE_ENDIAN);
 
    val (mzs, intensities) = precision match {
       case Precision.Number32 =>
@@ -296,9 +310,14 @@ object Peaks  {
         val intensities: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 != 0).map(_._1.toDouble)
         (mzs,intensities)
       case Precision.Number64 =>
-        val values = new Array[Double](arr.length / 8)
+        //println(arr.mkString)
+        //println("========")
+        //println(decompress(arr).mkString)
+        val values = new Array[Double](decompress(arr).length)
+        //println("Hello World!!")
         val db: DoubleBuffer = buffer.asDoubleBuffer();
         db.get(values)
+        //println(values.toString)
         val mzs: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 == 0).map(_._1)
         val intensities: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 != 0).map(_._1)
         (mzs,intensities)
@@ -306,16 +325,27 @@ object Peaks  {
     mzs.zipWithIndex.map( x => (x._1,intensities(x._2)))
   }
 
-  implicit val reader: XmlReader[Peaks] = {
+  def strToPrecision(name: String): Value =
+    mzxml.Precision.values.find(_.toString.toLowerCase() == name.toLowerCase()).getOrElse(Precision.Number32)
+
+  private val mzsIntensitiesPairReader: XmlReader[Seq[(Double,Double)]] = {
+    for {
+      base64 <- (__).read[String]
+      precision <- attribute[String]("precision")
+    } yield {
+      mzIntensitiesReader(base64,strToPrecision(precision))
+    }
+  }
+
+  implicit val reader: XmlReader[Peaks] =
     (
-      (__).read[String].map(base64val => mzIntensitiesReader(base64val,Precision.Number32)),
+      mzsIntensitiesPairReader,
       attribute("precision")(enum(Precision)).default(Precision.Number32),
       attribute[String]("byteOrder"),
       attribute("pairOrder")(enum(ContentType)).default(ContentType.Mu47zu45int).optional,
       attribute("compressionType")(enum(CompressionType)).default(CompressionType.NoneType).optional,
       attribute[Int]("compressedLen").optional
     ).mapN(apply)
-  }
 }
 
 case class ScanSequence(nameValue: String, comment: Option[String] = None)
