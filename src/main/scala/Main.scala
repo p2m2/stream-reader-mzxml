@@ -58,7 +58,7 @@ object Main extends IOApp {
           println(mzXML)
           msRun(mzXML)
             .map {
-              case Some(run) => Some(run.scan.filter(s => s.properties.num <20))
+              case Some(run) => Some(run.scan.filter(s => s.properties.num==20))
               case None => None
             }
             .compile
