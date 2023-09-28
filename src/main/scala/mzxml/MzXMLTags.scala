@@ -4,7 +4,9 @@ import com.lucidchart.open.xtract.{XmlReader, __}
 import com.lucidchart.open.xtract.XmlReader._
 import cats.syntax.all._
 import mzxml.Precision.Value
+import com.github.marklister.base64.Base64._
 
+import java.nio._
 import javax.xml.datatype.{DatatypeFactory, Duration}
 import scala.xml.NodeSeq
 
@@ -178,12 +180,11 @@ object DataProcessingSequence {
 }
 
 object ActivationMethod extends Enumeration {
-  val unknown = Value("unknown")
-  val ETD = Value("ETD")
-  val ECD = Value("ECD")
-  val CID = Value("CID")
-  val HCD = Value("HCD")
-  val ETDu43SA = Value("ETDu43SA")
+  val ETD : ActivationMethod.Value = Value("ETD")
+  val ECD : ActivationMethod.Value = Value("ECD")
+  val CID : ActivationMethod.Value = Value("CID")
+  val HCD : ActivationMethod.Value = Value("HCD")
+  val ETDu43SA : ActivationMethod.Value = Value("ETDu43SA")
 }
 
 case class PrecursorMz(
@@ -193,7 +194,7 @@ case class PrecursorMz(
                         precursorCharge : Option[BigInt],
                         possibleCharges : Option[String],
                         windowWideness : Option[Double],
-                        activationMethod : ActivationMethod.Value
+                        activationMethod : Option[ActivationMethod.Value]
                       )
 object PrecursorMz {
   implicit val reader: XmlReader[PrecursorMz] = (
@@ -203,19 +204,18 @@ object PrecursorMz {
     attribute[String]("precursorCharge").map(BigInt(_)).optional,
     attribute[String]("possibleCharges").optional,
     attribute[Double]("windowWideness").optional,
-    attribute("activationMethod")(enum(ActivationMethod)).default(ActivationMethod.unknown),
+    attribute("activationMethod")(enum(ActivationMethod)).optional,
   ).mapN(apply)
 }
 
 object ScanType extends Enumeration {
-  val unknown = Value("unknown")
-  val Full = Value("Full")
-  val Zoom = Value("Zoom")
-  val SIM = Value("SIM")
-  val SRM = Value("SRM")
-  val CRM = Value("CRM")
-  val Q1 = Value("Q1")
-  val Q3 = Value("Q3")
+  val Full : ScanType.Value  = Value("Full")
+  val Zoom : ScanType.Value  = Value("Zoom")
+  val SIM : ScanType.Value  = Value("SIM")
+  val SRM : ScanType.Value  = Value("SRM")
+  val CRM : ScanType.Value  = Value("CRM")
+  val Q1 : ScanType.Value  = Value("Q1")
+  val Q3 : ScanType.Value  = Value("Q3")
 }
 
 
@@ -241,65 +241,72 @@ object Maldi  {
 
 
 object Precision extends Enumeration {
-  val Number32 = Value("32")
-  val Number64 = Value("64")
+  val Number32 : Precision.Value = Value("32")
+  val Number64 : Precision.Value = Value("64")
 }
 
 object ContentType extends Enumeration {
-  val Mu47zu45int = Value("m/z-int")
-  val Mu47z = Value("m/z")
-  val Mu47zruler = Value("m/z ruler")
-  val TOF = Value("TOF")
-  val intensity = Value("intensity")
-  val Su47N = Value("S/N")
-  val Charge = Value("charge")
+  val Mu47zu45int : ContentType.Value = Value("m/z-int")
+  val Mu47z : ContentType.Value = Value("m/z")
+  val Mu47zruler : ContentType.Value = Value("m/z ruler")
+  val TOF : ContentType.Value = Value("TOF")
+  val intensity : ContentType.Value = Value("intensity")
+  val Su47N : ContentType.Value = Value("S/N")
+  val Charge : ContentType.Value= Value("charge")
 
 }
 
 object Polarity extends Enumeration {
-  val unknown = Value("unknown")
-  val U43 = Value("+")
-  val U45 = Value("-")
-  val AnyType = Value("any")
+  val unknown : Polarity.Value = Value("unknown")
+  val U43 : Polarity.Value = Value("+")
+  val U45 : Polarity.Value = Value("-")
+  val AnyType : Polarity.Value = Value("any")
 }
 
 object CompressionType extends Enumeration {
-  val NoneType = Value("none")
-  val Zlib = Value("zlib")
+  val NoneType : CompressionType.Value = Value("none")
+  val Zlib : CompressionType.Value = Value("zlib")
 }
 
 object PairOrder extends Enumeration {
-  val unknown = Value("m/z-int")
+  val Mu47zu45int : PairOrder.Value = Value("m/z-int")
 }
 
 case class Peaks(
                   mzsIntensitiesPair : Seq[(Double,Double)], // m/z - intensities
                   precision : Precision.Value,
                   byteOrder : String,
-                  pairOrder : Option[ContentType.Value],
+                  pairOrder : Option[PairOrder.Value],
                   compressionType : Option[CompressionType.Value],
                   compressedLen : Option[Int])
 
 object Peaks  {
   import java.util.zip.{Inflater, Deflater} // Zlib library
-  def decompress(inData: Array[Byte]): Array[Byte] = {
+  private def decompress(inData: Array[Byte]): Array[Byte] = {
     val inflater = new Inflater()
     inflater.setInput(inData)
-    val decompressedData = new Array[Byte](inData.size * 2)
+    val decompressedData = new Array[Byte](inData.length * 2)
     var count = inflater.inflate(decompressedData)
     var finalData = decompressedData.take(count)
     while (count > 0) {
       count = inflater.inflate(decompressedData)
       finalData = finalData ++ decompressedData.take(count)
     }
-    return finalData
+    finalData
   }
 
-  private def mzIntensitiesReader(strBase64 : String, precision : Precision.Value) : Seq[(Double,Double)] = {
-    import com.github.marklister.base64.Base64._
-    import java.nio._
-    val arr: Array[Byte] = strBase64.toByteArray
-    val buffer = ByteBuffer.wrap(arr).order(ByteOrder.LITTLE_ENDIAN);
+  private def mzIntensitiesReader(
+                                   strBase64 : String,
+                                   precision : Precision.Value,
+                                   compression : CompressionType.Value,
+                                 ) : Seq[(Double,Double)] = {
+
+    val arr: Array[Byte] = compression match {
+      case CompressionType.NoneType => strBase64.toByteArray
+      case CompressionType.Zlib => decompress(strBase64.toByteArray)
+    }
+
+    val buffer = ByteBuffer.wrap(arr).order(ByteOrder.BIG_ENDIAN)
 
    val (mzs, intensities) = precision match {
       case Precision.Number32 =>
@@ -310,14 +317,9 @@ object Peaks  {
         val intensities: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 != 0).map(_._1.toDouble)
         (mzs,intensities)
       case Precision.Number64 =>
-        //println(arr.mkString)
-        //println("========")
-        //println(decompress(arr).mkString)
-        val values = new Array[Double](decompress(arr).length)
-        //println("Hello World!!")
+        val values = new Array[Double](arr.length / 8) // arr.length / 16 => check should be equal => peakCount attribute
         val db: DoubleBuffer = buffer.asDoubleBuffer();
         db.get(values)
-        //println(values.toString)
         val mzs: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 == 0).map(_._1)
         val intensities: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 != 0).map(_._1)
         (mzs,intensities)
@@ -325,15 +327,16 @@ object Peaks  {
     mzs.zipWithIndex.map( x => (x._1,intensities(x._2)))
   }
 
-  def strToPrecision(name: String): Value =
+  private def strToPrecision(name: String): Value =
     mzxml.Precision.values.find(_.toString.toLowerCase() == name.toLowerCase()).getOrElse(Precision.Number32)
 
   private val mzsIntensitiesPairReader: XmlReader[Seq[(Double,Double)]] = {
     for {
       base64 <- (__).read[String]
       precision <- attribute[String]("precision")
+      compression <- attribute("compressionType")(enum(CompressionType)).default(CompressionType.NoneType)
     } yield {
-      mzIntensitiesReader(base64,strToPrecision(precision))
+      mzIntensitiesReader(base64,strToPrecision(precision),compression)
     }
   }
 
@@ -342,7 +345,7 @@ object Peaks  {
       mzsIntensitiesPairReader,
       attribute("precision")(enum(Precision)).default(Precision.Number32),
       attribute[String]("byteOrder"),
-      attribute("pairOrder")(enum(ContentType)).default(ContentType.Mu47zu45int).optional,
+      attribute("pairOrder")(enum(PairOrder)).default(PairOrder.Mu47zu45int).optional,
       attribute("compressionType")(enum(CompressionType)).default(CompressionType.NoneType).optional,
       attribute[Int]("compressedLen").optional
     ).mapN(apply)
@@ -361,9 +364,9 @@ case class ScanProperties(
                            num: BigInt,
                            msLevel: Int,
                            peaksCount: BigInt,
-                           polarity: Polarity.Value,
-                           scanType: ScanType.Value,
-                           filterLine: String,
+                           polarity: Option[Polarity.Value],
+                           scanType: Option[ScanType.Value],
+                           filterLine: Option[String],
                            centroided: Option[Boolean],
                            deisotoped: Option[Boolean],
                            chargeDeconvoluted: Option[Boolean],
@@ -387,9 +390,9 @@ object ScanProperties {
     attribute[String]("num").map(BigInt(_)),
     attribute[Int]("msLevel"),
     attribute[String]("peaksCount").map(BigInt(_)),
-    attribute("polarity")(enum(Polarity)).default(Polarity.unknown),
-    attribute("scanType")(enum(ScanType)).default(ScanType.unknown),
-    attribute[String]("filterLine"),
+    attribute("polarity")(enum(Polarity)).optional,
+    attribute("scanType")(enum(ScanType)).optional,
+    attribute[String]("filterLine").optional,
     attribute[Boolean]("centroided").optional,
     attribute[Boolean]("deisotoped").optional,
     attribute[Boolean]("chargeDeconvoluted").optional,
@@ -419,7 +422,9 @@ case class Scan1(
                  )
 
 object Scan1 {
-    implicit val reader: XmlReader[Scan1] = (
+    implicit val reader: XmlReader[Scan1] = {
+      println("MsRun")
+      (
         __.read[ScanProperties],
       ( __ \ "precursorMz").read(seq[mzxml.PrecursorMz]),
       ( __ \ "maldi").read[mzxml.Maldi].optional,
@@ -427,6 +432,7 @@ object Scan1 {
       ( __ \ "scanSequence").read(seq[mzxml.ScanSequence]),
       ( __ \ "scan").read(seq[mzxml.Scan2])
     ).mapN(apply)
+    }
 }
 
 case class Scan2(

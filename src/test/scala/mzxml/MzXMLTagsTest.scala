@@ -134,7 +134,7 @@ object MzXMLTagsTest extends TestSuite {
       assert(parentFilePR.isSuccessful)
       val parentFile = parentFilePR.getOrElse(null)
       assert(parentFile != null)
-      assert(parentFile.fileName == java.net.URI.create("R1_RG59_B4_1.RAW"))
+      assert(parentFile.fileName == "R1_RG59_B4_1.RAW")
       assert(parentFile.fileType == FileType.RAWData)
       assert(parentFile.fileSha1 == "8710fc9a36c249bc85b5a4ce560b03d5aac319cc")
     }

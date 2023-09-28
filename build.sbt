@@ -1,4 +1,4 @@
-
+import sbt.Test
 // The simplest possible sbt build file is just one line:
 
 scalaVersion := "2.13.12"
@@ -22,9 +22,10 @@ libraryDependencies ++= Seq(
  "com.lucidchart" %% "xtract" % "2.3.0",
   "co.fs2" %% "fs2-core" % "3.9.2",
   "co.fs2" %% "fs2-io" % "3.9.2",
-  "co.fs2" %%"fs2-core"%"3.9.2",
+  "co.fs2" %% "fs2-core" % "3.9.2",
   "org.gnieh" %%"fs2-data-xml"%"1.8.0",
   "com.github.marklister" %% "base64" % "0.3.0",
+  "org.typelevel" %% "cats-effect-testing-utest" % "1.5.0" % Test,
   "com.lihaoyi" %% "utest" % "0.8.1" % Test,
 )
 
