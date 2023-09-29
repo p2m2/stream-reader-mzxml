@@ -26,16 +26,16 @@ object MzXML {
   ).mapN(apply)
 }
 case class MsRun(
-             scanCount : Option[Int],
-             startTimeInSeconds : Option[Int],
-             endTimeInSeconds : Option[Int],
-             parentFile: Seq[mzxml.ParentFile] = Nil,
-             msInstrument: Seq[mzxml.MsInstrument] = Nil,
-             dataProcessing: Seq[mzxml.DataProcessing] = Nil,
-         //    separation: Option[mzxml.Separation] = None,
-         //    spotting: Option[mzxml.Spotting] = None,
-             scan: Seq[mzxml.Scan1] = Nil,
-             sha1: Option[String] = None,
+                  scanCount : Option[Int],
+                  startTimeInSeconds : Option[Int],
+                  endTimeInSeconds : Option[Int],
+                  parentFile: Seq[mzxml.ParentFile] = Nil,
+                  msInstrument: Seq[mzxml.MsInstrument] = Nil,
+                  dataProcessing: Seq[mzxml.DataProcessing] = Nil,
+                  //    separation: Option[mzxml.Separation] = None,
+                  //    spotting: Option[mzxml.Spotting] = None,
+                  scan: Seq[mzxml.Scan] = Nil,
+                  sha1: Option[String] = None,
            )
 
 object MsRun {
@@ -46,7 +46,7 @@ object MsRun {
     (__ \ "parentFile").read(seq[mzxml.ParentFile]),
     (__ \ "msInstrument")read(seq[mzxml.MsInstrument]),
     (__ \ "dataProcessing")read(seq[mzxml.DataProcessing]),
-    (__ \ "scan")read(seq[mzxml.Scan1]),
+    (__ \ "scan")read(seq[mzxml.Scan]),
     attribute[String]("sha1").optional
   ).mapN(apply)
 }
@@ -71,7 +71,7 @@ object ParentFile {
   ).mapN(apply)
 }
 
-case class OntologyEntryTypable(category : String,value : String) 
+case class OntologyEntryTypable(category : String,value : String)
 
 object OntologyEntryTypable {
   implicit val reader: XmlReader[OntologyEntryTypable] = (
@@ -95,7 +95,7 @@ object Software {
 case class Operator(first : String,last : String,phone : Option[String],email : Option[String] = None,URI : java.net.URI)
 
 object Operator {
-  
+
   private def validateEmail(email: String): Boolean = email contains "@"
 
   implicit val reader: XmlReader[Operator] = (
@@ -146,7 +146,7 @@ object MsInstrument {
   ).mapN(apply)
   }
 }
-      
+
 
 case class DataProcessing(
                            intensityCutoff : Option[Double],
@@ -412,17 +412,17 @@ object ScanProperties {
   ).mapN(apply)
 }
 
-case class Scan1(
+case class Scan(
                  properties : mzxml.ScanProperties,
                  precursorMz: Seq[mzxml.PrecursorMz] = Nil,
                  maldi: Option[mzxml.Maldi] = None,
                  peaks: Seq[mzxml.Peaks] = Nil,
                  scansequence: Seq[mzxml.ScanSequence] = Nil,
-                 scan: Seq[mzxml.Scan2] = Nil
+                 scan: Seq[mzxml.SubScan] = Nil
                  )
 
-object Scan1 {
-    implicit val reader: XmlReader[Scan1] = {
+object Scan {
+    implicit val reader: XmlReader[Scan] = {
       println("MsRun")
       (
         __.read[ScanProperties],
@@ -430,28 +430,28 @@ object Scan1 {
       ( __ \ "maldi").read[mzxml.Maldi].optional,
       ( __ \ "peaks").read(seq[mzxml.Peaks]),
       ( __ \ "scanSequence").read(seq[mzxml.ScanSequence]),
-      ( __ \ "scan").read(seq[mzxml.Scan2])
+      ( __ \ "scan").read(seq[mzxml.SubScan])
     ).mapN(apply)
     }
 }
 
-case class Scan2(
+case class SubScan(
                  properties : mzxml.ScanProperties,
                  precursorMz: Seq[mzxml.PrecursorMz] = Nil,
                  maldi: Option[mzxml.Maldi] = None,
                  peaks: Seq[mzxml.Peaks] = Nil,
                  scansequence: Seq[mzxml.ScanSequence] = Nil,
-                 scan: Seq[mzxml.Scan1] = Nil
+                 scan: Seq[mzxml.Scan] = Nil
                )
 
-object Scan2 {
-  implicit val reader: XmlReader[mzxml.Scan2] = (
+object SubScan {
+  implicit val reader: XmlReader[mzxml.SubScan] = (
     __.read[ScanProperties],
     ( __ \ "precursorMz").read(seq[PrecursorMz]),
     ( __ \ "maldi").read[Maldi].optional,
     ( __ \ "peaks").read(seq[Peaks]),
     ( __ \ "scanSequence").read(seq[ScanSequence]),
-    ( __ \ "scan").read(seq[mzxml.Scan1])
+    ( __ \ "scan").read(seq[mzxml.Scan])
   ).mapN(apply)
 }
 
