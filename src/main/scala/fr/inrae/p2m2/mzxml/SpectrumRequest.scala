@@ -1,4 +1,4 @@
-package mzxml
+package fr.inrae.p2m2.mzxml
 
 import cats.effect.IO
 
@@ -12,12 +12,12 @@ import scala.xml._
 
 case class SpectrumRequest (mzXMLpath: String) {
 
-  def msLevel(num : Int) : Stream[IO, Option[mzxml.Spectrum]] = {
+  def msLevel(num : Int) : Stream[IO, Option[Spectrum]] = {
     XPathParser.either(s"""//scan[@msLevel == "$num"]""") match {
       case Right(x: XPath) =>
         val e = XmlStreamRequest(mzXMLpath).requestXpath(x)
         e.map(eventXml => {
-          XmlReader.of[mzxml.ScanOrigin].read(XML.loadString(eventXml)).toOption match {
+          XmlReader.of[ScanOrigin].read(XML.loadString(eventXml)).toOption match {
             case Some(scan) => Some(scan)
             case _ => None
           }
@@ -34,12 +34,12 @@ case class SpectrumRequest (mzXMLpath: String) {
    * @param tolMz tolerance for mz
    * @return
    */
-  def precursorMz(mz : Double, precursorIntensityMin:Double=0.0,tolMz : Double = 0.005): Stream[IO, Option[mzxml.Spectrum]] = {
+  def precursorMz(mz : Double, precursorIntensityMin:Double=0.0,tolMz : Double = 0.005): Stream[IO, Option[Spectrum]] = {
     XPathParser.either("//scan") match {
       case Right(x : XPath) =>
         val e = XmlStreamRequest(mzXMLpath).requestXpath(x)
         e.map(eventXml => {
-          XmlReader.of[mzxml.ScanOrigin].read(XML.loadString(eventXml)).toOption match {
+          XmlReader.of[ScanOrigin].read(XML.loadString(eventXml)).toOption match {
             case Some(scan) if scan.precursorMz.nonEmpty =>
               if(scan
                 .precursorMz

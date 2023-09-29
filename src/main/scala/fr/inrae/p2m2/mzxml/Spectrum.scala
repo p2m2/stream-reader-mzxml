@@ -1,4 +1,4 @@
-package mzxml
+package fr.inrae.p2m2.mzxml
 
 import scala.language.implicitConversions
 
@@ -32,7 +32,7 @@ case class Spectrum(
                      totIonCurrent: Option[Double] = None,
                      msInstrumentID: Option[Int] = None,
                      compensationVoltage: Option[Double] = None,
-                     precursorMz: Seq[mzxml.PrecursorMz] = Seq(),
+                     precursorMz: Seq[PrecursorMz] = Seq(),
                      peaks: Seq[(Double,Double)] = Seq()
                    )  {
 }

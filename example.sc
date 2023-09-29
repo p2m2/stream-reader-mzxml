@@ -1,7 +1,3 @@
-
-## ammonite example
-
-```scala
 import $cp.`target/scala-2.13/mzXML-stream-assembly-1.0.jar`
 import cats.effect.{IO, IOApp}
 import fs2.{Stream, text, Pipe}
@@ -38,19 +34,3 @@ SpectrumRequest(mzXMLFile).precursorMz(288.93,5000).map {
 .unsafeRunSync()
 
 println(outputFile)
-```
-
-`amm example.sc`
-
-
-## test
-
-```bash
-sbt "run ./src/test/resources/LTQ_Orbitrap_precision32.mzXML"
-```
-
-
-## specifications
-
-https://sashimi.sourceforge.net/schema_revision/mzXML_2.1/Doc/mzXML_2.0_tutorial.pdf
-

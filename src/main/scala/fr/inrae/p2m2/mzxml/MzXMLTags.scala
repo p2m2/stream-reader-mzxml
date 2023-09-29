@@ -1,17 +1,16 @@
-package mzxml
+package fr.inrae.p2m2.mzxml
 
 import com.lucidchart.open.xtract.{XmlReader, __}
 import com.lucidchart.open.xtract.XmlReader._
 import cats.syntax.all._
-import mzxml.Precision.Value
 import com.github.marklister.base64.Base64._
+import fr.inrae.p2m2.mzxml
 
 import java.nio._
-import javax.xml.datatype.{DatatypeFactory, Duration}
-import scala.xml.NodeSeq
+import javax.xml.datatype.DatatypeFactory
 
 case class MzXML(
-                  msRun : mzxml.MsRun,
+                  msRun : MsRun,
                   index : Seq[mzxml.IndexScan] = Nil,
                   indexOffset : Option[mzxml.IndexOffset],
                   sha1: Option[String] = None
@@ -19,7 +18,7 @@ case class MzXML(
 
 object MzXML {
   implicit val reader: XmlReader[MzXML] = (
-    (__ \ "msRun").read[mzxml.MsRun],
+    (__ \ "msRun").read[MsRun],
     (__ \ "index").read(seq[mzxml.IndexScan]),
     (__ \ "indexOffset").read[mzxml.IndexOffset].optional,
     attribute[String]("sha1").optional
@@ -29,9 +28,9 @@ case class MsRun(
                   scanCount : Option[Int],
                   startTimeInSeconds : Option[Int],
                   endTimeInSeconds : Option[Int],
-                  parentFile: Seq[mzxml.ParentFile] = Nil,
-                  msInstrument: Seq[mzxml.MsInstrument] = Nil,
-                  dataProcessing: Seq[mzxml.DataProcessing] = Nil,
+                  parentFile: Seq[ParentFile] = Nil,
+                  msInstrument: Seq[MsInstrument] = Nil,
+                  dataProcessing: Seq[DataProcessing] = Nil,
                   //    separation: Option[mzxml.Separation] = None,
                   //    spotting: Option[mzxml.Spotting] = None,
                   scan: Seq[mzxml.ScanOrigin] = Nil,
@@ -43,9 +42,9 @@ object MsRun {
     attribute[String]("scanCount").map(_.toInt).optional,
     attribute[String]("startTime").map(DatatypeFactory.newInstance().newDuration).map(_.getSeconds).optional,
     attribute[String]("endTime").map(DatatypeFactory.newInstance().newDuration).map(_.getSeconds).optional,
-    (__ \ "parentFile").read(seq[mzxml.ParentFile]),
-    (__ \ "msInstrument")read(seq[mzxml.MsInstrument]),
-    (__ \ "dataProcessing")read(seq[mzxml.DataProcessing]),
+    (__ \ "parentFile").read(seq[ParentFile]),
+    (__ \ "msInstrument")read(seq[MsInstrument]),
+    (__ \ "dataProcessing")read(seq[DataProcessing]),
     (__ \ "scan")read(seq[mzxml.ScanOrigin]),
     attribute[String]("sha1").optional
   ).mapN(apply)
@@ -118,31 +117,31 @@ object MsInstrumentSequence {
 }
 
 case class MsInstrument(
-  msInstrumentID : Option[String],
-  msManufacturer: mzxml.OntologyEntryTypable,
-  msModel: mzxml.OntologyEntryTypable,
-  msIonisation: mzxml.OntologyEntryTypable,
-  msMassAnalyzer: mzxml.OntologyEntryTypable,
-  msDetector: mzxml.OntologyEntryTypable,
-  software: mzxml.Software,
-  msResolution: Option[mzxml.OntologyEntryTypable] = None,
-  operator: Option[mzxml.Operator] = None,
-  msinstrumentsequence1: Seq[mzxml.MsInstrumentSequence] = Nil)
+                         msInstrumentID : Option[String],
+                         msManufacturer: OntologyEntryTypable,
+                         msModel: OntologyEntryTypable,
+                         msIonisation: OntologyEntryTypable,
+                         msMassAnalyzer: OntologyEntryTypable,
+                         msDetector: OntologyEntryTypable,
+                         software: Software,
+                         msResolution: Option[OntologyEntryTypable] = None,
+                         operator: Option[Operator] = None,
+                         msinstrumentsequence1: Seq[MsInstrumentSequence] = Nil)
 
 object MsInstrument {
 
   implicit val reader: XmlReader[MsInstrument] = {
    (
     attribute[String]("msInstrumentID").optional,
-    (__ \ "msManufacturer").read[mzxml.OntologyEntryTypable],
-    (__ \ "msModel").read[mzxml.OntologyEntryTypable],
-    (__ \ "msIonisation").read[mzxml.OntologyEntryTypable],
-   (__ \ "msMassAnalyzer").read[mzxml.OntologyEntryTypable],
-   (__ \ "msDetector").read[mzxml.OntologyEntryTypable],
+    (__ \ "msManufacturer").read[OntologyEntryTypable],
+    (__ \ "msModel").read[OntologyEntryTypable],
+    (__ \ "msIonisation").read[OntologyEntryTypable],
+   (__ \ "msMassAnalyzer").read[OntologyEntryTypable],
+   (__ \ "msDetector").read[OntologyEntryTypable],
    (__ \ "software").read[Software],
-   (__ \ "msResolution").read[mzxml.OntologyEntryTypable].optional,
-    (__ \ "operator").read[mzxml.Operator].optional,
-   (__ \ "msinstrumentsequence").read(seq[mzxml.MsInstrumentSequence])
+   (__ \ "msResolution").read[OntologyEntryTypable].optional,
+    (__ \ "operator").read[Operator].optional,
+   (__ \ "msinstrumentsequence").read(seq[MsInstrumentSequence])
   ).mapN(apply)
   }
 }
@@ -154,8 +153,8 @@ case class DataProcessing(
                            deisotoped : Option[Boolean],
                            chargeDeconvoluted : Option[Boolean],
                            spotIntegration : Option[Boolean],
-                           software: mzxml.Software,
-                           dataprocessingsequence1: Seq[mzxml.DataProcessingSequence] = Nil
+                           software: Software,
+                           dataprocessingsequence1: Seq[DataProcessingSequence] = Nil
                          )
 object DataProcessing {
   implicit val reader: XmlReader[DataProcessing] = (
@@ -327,12 +326,12 @@ object Peaks  {
     mzs.zipWithIndex.map( x => (x._1,intensities(x._2))).filter(_._2>0) // removes intensities equal to zero
   }
 
-  private def strToPrecision(name: String): Value =
+  private def strToPrecision(name: String): Precision.Value =
     mzxml.Precision.values.find(_.toString.toLowerCase() == name.toLowerCase()).getOrElse(Precision.Number32)
 
   private val mzsIntensitiesPairReader: XmlReader[Seq[(Double,Double)]] = {
     for {
-      base64 <- (__).read[String]
+      base64 <- __.read[String]
       precision <- attribute[String]("precision")
       compression <- attribute("compressionType")(enum(CompressionType)).default(CompressionType.NoneType)
     } yield {
@@ -414,8 +413,8 @@ object ScanProperties {
 
 case class ScanOrigin(
                        properties : mzxml.ScanProperties,
-                       precursorMz: Seq[mzxml.PrecursorMz] = Nil,
-                       maldi: Option[mzxml.Maldi] = None,
+                       precursorMz: Seq[PrecursorMz] = Nil,
+                       maldi: Option[Maldi] = None,
                        peaks: Seq[mzxml.Peaks] = Nil,
                        scanSequence: Seq[mzxml.ScanSequence] = Nil,
                        scan: Seq[mzxml.SubScan] = Nil
@@ -424,8 +423,8 @@ case class ScanOrigin(
 object ScanOrigin {
     implicit val reader: XmlReader[ScanOrigin] = {
       (__.read[ScanProperties],
-      ( __ \ "precursorMz").read(seq[mzxml.PrecursorMz]),
-      ( __ \ "maldi").read[mzxml.Maldi].optional,
+      ( __ \ "precursorMz").read(seq[PrecursorMz]),
+      ( __ \ "maldi").read[Maldi].optional,
       ( __ \ "peaks").read(seq[mzxml.Peaks]),
       ( __ \ "scanSequence").read(seq[mzxml.ScanSequence]),
       ( __ \ "scan").read(seq[mzxml.SubScan])
@@ -434,12 +433,12 @@ object ScanOrigin {
 }
 
 case class SubScan(
-                 properties : mzxml.ScanProperties,
-                 precursorMz: Seq[mzxml.PrecursorMz] = Nil,
-                 maldi: Option[mzxml.Maldi] = None,
-                 peaks: Seq[mzxml.Peaks] = Nil,
-                 scansequence: Seq[mzxml.ScanSequence] = Nil,
-                 scan: Seq[mzxml.ScanOrigin] = Nil
+                    properties : mzxml.ScanProperties,
+                    precursorMz: Seq[PrecursorMz] = Nil,
+                    maldi: Option[Maldi] = None,
+                    peaks: Seq[mzxml.Peaks] = Nil,
+                    scansequence: Seq[mzxml.ScanSequence] = Nil,
+                    scan: Seq[mzxml.ScanOrigin] = Nil
                )
 
 object SubScan {

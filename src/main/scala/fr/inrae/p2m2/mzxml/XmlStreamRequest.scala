@@ -1,4 +1,4 @@
-package mzxml
+package fr.inrae.p2m2.mzxml
 
 import cats.Show
 import cats.effect.IO

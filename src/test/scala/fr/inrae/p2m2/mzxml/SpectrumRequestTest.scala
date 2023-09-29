@@ -1,4 +1,4 @@
-package mzxml
+package fr.inrae.p2m2.mzxml
 
 import utest.{TestSuite, Tests, test}
 import cats.effect.unsafe.implicits.global
