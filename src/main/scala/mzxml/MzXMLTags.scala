@@ -34,7 +34,7 @@ case class MsRun(
                   dataProcessing: Seq[mzxml.DataProcessing] = Nil,
                   //    separation: Option[mzxml.Separation] = None,
                   //    spotting: Option[mzxml.Spotting] = None,
-                  scan: Seq[mzxml.Scan] = Nil,
+                  scan: Seq[mzxml.ScanOrigin] = Nil,
                   sha1: Option[String] = None,
            )
 
@@ -46,7 +46,7 @@ object MsRun {
     (__ \ "parentFile").read(seq[mzxml.ParentFile]),
     (__ \ "msInstrument")read(seq[mzxml.MsInstrument]),
     (__ \ "dataProcessing")read(seq[mzxml.DataProcessing]),
-    (__ \ "scan")read(seq[mzxml.Scan]),
+    (__ \ "scan")read(seq[mzxml.ScanOrigin]),
     attribute[String]("sha1").optional
   ).mapN(apply)
 }
@@ -324,7 +324,7 @@ object Peaks  {
         val intensities: Seq[Double] = values.zipWithIndex.filter(_._2 % 2 != 0).map(_._1)
         (mzs,intensities)
     }
-    mzs.zipWithIndex.map( x => (x._1,intensities(x._2)))
+    mzs.zipWithIndex.map( x => (x._1,intensities(x._2))).filter(_._2>0) // removes intensities equal to zero
   }
 
   private def strToPrecision(name: String): Value =
@@ -361,35 +361,35 @@ object ScanSequence {
 }
 
 case class ScanProperties(
-                           num: BigInt,
+                           num: Int,
                            msLevel: Int,
-                           peaksCount: BigInt,
-                           polarity: Option[Polarity.Value],
-                           scanType: Option[ScanType.Value],
-                           filterLine: Option[String],
-                           centroided: Option[Boolean],
-                           deisotoped: Option[Boolean],
-                           chargeDeconvoluted: Option[Boolean],
-                           retentionTimeInSeconds: Option[Int], // in seconds
-                           ionisationEnergy: Option[Double],
-                           collisionEnergy: Option[Double],
-                           cidGasPressure: Option[Double],
-                           startMz: Option[Double],
-                           endMz: Option[Double],
-                           lowMz: Option[Double],
-                           highMz: Option[Double],
-                           basePeakMz: Option[Double],
-                           basePeakIntensity: Option[Double],
-                           totIonCurrent : Option[Double],
-                           msInstrumentID : Option[Int],
-                           compensationVoltage : Option[Double],
+                           peaksCount: Int,
+                           polarity: Option[Polarity.Value] = None,
+                           scanType: Option[ScanType.Value] = None,
+                           filterLine: Option[String] = None,
+                           centroided: Option[Boolean] = None,
+                           deisotoped: Option[Boolean] = None,
+                           chargeDeconvoluted: Option[Boolean] = None,
+                           retentionTimeInSeconds: Option[Int] = None, // in seconds
+                           ionisationEnergy: Option[Double] = None,
+                           collisionEnergy: Option[Double] = None,
+                           cidGasPressure: Option[Double] = None,
+                           startMz: Option[Double] = None,
+                           endMz: Option[Double] = None,
+                           lowMz: Option[Double] = None,
+                           highMz: Option[Double] = None,
+                           basePeakMz: Option[Double] = None,
+                           basePeakIntensity: Option[Double] = None,
+                           totIonCurrent : Option[Double] = None,
+                           msInstrumentID : Option[Int] = None,
+                           compensationVoltage : Option[Double] = None,
                        )
 
 object ScanProperties {
   implicit val reader: XmlReader[ScanProperties] = (
-    attribute[String]("num").map(BigInt(_)),
+    attribute[Int]("num"),
     attribute[Int]("msLevel"),
-    attribute[String]("peaksCount").map(BigInt(_)),
+    attribute[Int]("peaksCount"),
     attribute("polarity")(enum(Polarity)).optional,
     attribute("scanType")(enum(ScanType)).optional,
     attribute[String]("filterLine").optional,
@@ -412,20 +412,18 @@ object ScanProperties {
   ).mapN(apply)
 }
 
-case class Scan(
-                 properties : mzxml.ScanProperties,
-                 precursorMz: Seq[mzxml.PrecursorMz] = Nil,
-                 maldi: Option[mzxml.Maldi] = None,
-                 peaks: Seq[mzxml.Peaks] = Nil,
-                 scansequence: Seq[mzxml.ScanSequence] = Nil,
-                 scan: Seq[mzxml.SubScan] = Nil
+case class ScanOrigin(
+                       properties : mzxml.ScanProperties,
+                       precursorMz: Seq[mzxml.PrecursorMz] = Nil,
+                       maldi: Option[mzxml.Maldi] = None,
+                       peaks: Seq[mzxml.Peaks] = Nil,
+                       scanSequence: Seq[mzxml.ScanSequence] = Nil,
+                       scan: Seq[mzxml.SubScan] = Nil
                  )
 
-object Scan {
-    implicit val reader: XmlReader[Scan] = {
-      println("MsRun")
-      (
-        __.read[ScanProperties],
+object ScanOrigin {
+    implicit val reader: XmlReader[ScanOrigin] = {
+      (__.read[ScanProperties],
       ( __ \ "precursorMz").read(seq[mzxml.PrecursorMz]),
       ( __ \ "maldi").read[mzxml.Maldi].optional,
       ( __ \ "peaks").read(seq[mzxml.Peaks]),
@@ -441,7 +439,7 @@ case class SubScan(
                  maldi: Option[mzxml.Maldi] = None,
                  peaks: Seq[mzxml.Peaks] = Nil,
                  scansequence: Seq[mzxml.ScanSequence] = Nil,
-                 scan: Seq[mzxml.Scan] = Nil
+                 scan: Seq[mzxml.ScanOrigin] = Nil
                )
 
 object SubScan {
@@ -451,7 +449,7 @@ object SubScan {
     ( __ \ "maldi").read[Maldi].optional,
     ( __ \ "peaks").read(seq[Peaks]),
     ( __ \ "scanSequence").read(seq[ScanSequence]),
-    ( __ \ "scan").read(seq[mzxml.Scan])
+    ( __ \ "scan").read(seq[mzxml.ScanOrigin])
   ).mapN(apply)
 }
 

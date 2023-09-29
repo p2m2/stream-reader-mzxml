@@ -8,14 +8,25 @@ object SpectrumRequestTest extends TestSuite {
 
   val tests: Tests = Tests {
     test("precursorMz") {
-      val r = SpectrumRequest(getClass.getResource(ex1).getPath).precursorMz(288.93,5000).map {
-        case Some(r) => println(r.precursorMz(0).value)
+      val r = SpectrumRequest(getClass.getResource(ex1).getPath).precursorMz(288.93,9000).map {
+        case Some(r) => println(r.precursorMz.head.value, r.precursorMz.head.precursorIntensity)
         case None => None
       }
-      val res = r.compile
+
+      r
+        .compile
         .toList
         .unsafeRunSync()
-      println(res)
+    }
+
+    test("msLevel 2") {
+      val r = SpectrumRequest(getClass.getResource(ex2).getPath).msLevel(2).map {
+        case Some(r) => println(r.peaks.length)
+        case None => None
+      }
+      r.compile
+        .toList
+        .unsafeRunSync()
     }
   }
 }

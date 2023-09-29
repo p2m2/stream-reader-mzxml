@@ -11,7 +11,7 @@ import fs2.data.xml.xpath.literals._
 
 import java.nio.charset.Charset
 import com.lucidchart.open.xtract.XmlReader
-import mzxml.Scan
+import mzxml.ScanOrigin
 
 import scala.xml.{NodeSeq, XML}
 
