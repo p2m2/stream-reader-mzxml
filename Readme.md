@@ -122,6 +122,9 @@ val endTime = 5
 ```
 
 `amm example.sc`
+```bash
+amm glucosinolateIons.sc ../mzxml-glucosinolate-analyser/src/test/resources/20181018-037.mzXML 100000
+```
 
 
 ## test

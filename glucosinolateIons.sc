@@ -12,6 +12,7 @@ import fr.inrae.p2m2.mzxml.utils.ChemicalConst
 @main
 def main(
           mzXMLFile: String,
+          noiseIntensity : Double  ,
           startTime : Double       = 0,
           endTime : Double         = Double.MaxValue,
           numberCarbonMin : Double = 3,
@@ -32,7 +33,11 @@ def main(
       .filter(_.retentionTimeInSeconds.getOrElse(Int.MaxValue) <= endTime)
       .map {
         (spectrum: Spectrum) => {
-          spectrum.peaks.map {
+          spectrum.peaks
+            .filter {
+              case (_, int) => int>noiseIntensity
+            }
+            .map {
               case (mz0, int0) =>
                 val (mz1, int1) = spectrum.findClosestValueMz(mz0 + deltaMp0Mp1)
                 val (mz2, int2) = spectrum.findClosestValueMz(mz0 + deltaMp0Mp2)
@@ -58,18 +63,28 @@ def main(
             .filter {
               case (v0, _, v2) =>
                 v2._2 < v0._2 * ChemicalConst.abundanceIsotope("S")(2) * numberSulfurMax
-            }.map(
-              (spectrum.retentionTimeInSeconds.getOrElse(-1), _)
-            )
+            }.map {
+              case (v0, v1, v2) => (
+                spectrum.retentionTimeInSeconds.getOrElse(-1),
+                spectrum.msLevel,
+                spectrum.num,
+                v0._1,v0._2,
+                v1._1,v1._2,
+                v2._1,v2._2
+              )
+            }
         }
       }
-      .map(x => x.map(y => y.toString() + "\n").mkString("\n"))
+      .map(x => x.map(y => y.toList.map(_.toString()).mkString(";") + "\n").mkString)
+      .filter(_.trim.nonEmpty)
       .through(text.utf8.encode)
       .through(Files[IO].writeAll(Path(outputFile)))
       .compile
       .drain
       .unsafeRunSync()
 
-    println(s"****************$outputFile**********")
-  
+    println(s"****************$outputFile***********************")
+    println(" ----- HEADER ----")
+    println("RET_TIME;MS_LEVEL;NUM_SCAN;MS0;INT0;MS1;INT1;MS2;INT2")
+
 }
