@@ -1,6 +1,7 @@
 package fr.inrae.p2m2.mzxml
 
 import scala.language.implicitConversions
+import scala.math.abs
 
 /**
  * interface class for users. This class does not integrate the recursion of the "scan" tag defined in the XML format.
@@ -35,6 +36,9 @@ case class Spectrum(
                      precursorMz: Seq[PrecursorMz] = Seq(),
                      peaks: Seq[(Double,Double)] = Seq()
                    )  {
+  def findClosestValueMz(mz: Double) : (Double,Double) = {
+    peaks.minBy(v => math.abs(v._1 - mz))
+  }
 }
 
 object Spectrum {
