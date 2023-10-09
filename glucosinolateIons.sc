@@ -16,7 +16,7 @@ import fr.inrae.p2m2.mzxml.utils.ChemicalConst
 def main(
           mzXMLFile: String,
           noiseIntensity : Double,
-          ppm_precision : Double   = 5.0,
+          ppm_precision : Double   = 4,
           startTime : Double       = 0,
           endTime : Double         = Double.MaxValue,
           numberCarbonMin : Double = 3,
@@ -29,7 +29,7 @@ def main(
 
     val outputFile : String = mzXMLFile.split("/").last.replace(".mzXML",".ions.txt")
 
-    val p_const = ppm_precision / Math.pow(10,6)
+    val p_const = Math.pow(10,6)
 
     SpectrumRequest(mzXMLFile)
       .msLevel(1)
@@ -49,14 +49,13 @@ def main(
                 val d1 : Double = mz0 + deltaMp0Mp2
                 val (mz1, int1) = spectrum.findClosestValueMz(d0)
                 val (mz2, int2) = spectrum.findClosestValueMz(d1)
-                //  ppm_error <- abs(((mz_obs - mz_theoric) / mz_theoric) * 10^6)
-                val diff1 : Double = Math.abs(mz1-d0)
-                val diff2 : Double = Math.abs(mz2-d1)
 
-                val ppm_error_0 = p_const*d0
-                val ppm_error_1 = p_const*d1
-               // print(diff1<ppm_error_0,diff2<ppm_error_1,"\n")
-                (diff1<ppm_error_0,diff2<ppm_error_1,(mz0, int0), (mz1, int1), (mz2, int2)) // isotopes
+                val ppm_error_0 = (Math.abs( (mz1 - d0) / d0) * p_const)
+                val ppm_error_1 = (Math.abs( (mz2 - d1) / d1) * p_const)
+
+               // print(ppm_error_0,ppm_error_1,"\n")
+
+                (ppm_error_0 < ppm_precision,ppm_error_1 < ppm_precision,(mz0, int0), (mz1, int1), (mz2, int2)) // isotopes
             }
             .filter {
               case (ppm0, ppm1, _, _, _) => ppm0 && ppm1
