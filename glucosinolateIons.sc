@@ -8,11 +8,15 @@ import cats.effect.unsafe.implicits._
 import fr.inrae.p2m2.mzxml._
 import fr.inrae.p2m2.mzxml.utils.ChemicalConst
 
+/* check consecutive ions according a delta ppm and a delta rt */
+/* criteria => maximum intensity of M0 */
+
 
 @main
 def main(
           mzXMLFile: String,
-          noiseIntensity : Double  ,
+          noiseIntensity : Double,
+          ppm_precision : Double   = 5.0,
           startTime : Double       = 0,
           endTime : Double         = Double.MaxValue,
           numberCarbonMin : Double = 3,
@@ -24,6 +28,8 @@ def main(
         ) : Unit = {
 
     val outputFile : String = mzXMLFile.split("/").last.replace(".mzXML",".ions.txt")
+
+    val p_const = ppm_precision / Math.pow(10,6)
 
     SpectrumRequest(mzXMLFile)
       .msLevel(1)
@@ -39,11 +45,26 @@ def main(
             }
             .map {
               case (mz0, int0) =>
-                val (mz1, int1) = spectrum.findClosestValueMz(mz0 + deltaMp0Mp1)
-                val (mz2, int2) = spectrum.findClosestValueMz(mz0 + deltaMp0Mp2)
-                ((mz0, int0), (mz1, int1), (mz2, int2)) // isotopes
+                val d0 : Double = mz0 + deltaMp0Mp1
+                val d1 : Double = mz0 + deltaMp0Mp2
+                val (mz1, int1) = spectrum.findClosestValueMz(d0)
+                val (mz2, int2) = spectrum.findClosestValueMz(d1)
+                //  ppm_error <- abs(((mz_obs - mz_theoric) / mz_theoric) * 10^6)
+                val diff1 : Double = Math.abs(mz1-d0)
+                val diff2 : Double = Math.abs(mz2-d1)
 
-            }.filter {
+                val ppm_error_0 = p_const*d0
+                val ppm_error_1 = p_const*d1
+               // print(diff1<ppm_error_0,diff2<ppm_error_1,"\n")
+                (diff1<ppm_error_0,diff2<ppm_error_1,(mz0, int0), (mz1, int1), (mz2, int2)) // isotopes
+            }
+            .filter {
+              case (ppm0, ppm1, _, _, _) => ppm0 && ppm1
+            }
+            .map{
+                case (_,_,v0, v1, v2) => (v0,v1,v2)
+              }
+            .filter {
               case (v0, v1, _) =>
                 v1._2 >= v0._2 *
                   (ChemicalConst.abundanceIsotope("C")(1) * numberCarbonMin +
@@ -63,7 +84,8 @@ def main(
             .filter {
               case (v0, _, v2) =>
                 v2._2 < v0._2 * ChemicalConst.abundanceIsotope("S")(2) * numberSulfurMax
-            }.map {
+            }
+            .map {
               case (v0, v1, v2) => (
                 spectrum.retentionTimeInSeconds.getOrElse(-1),
                 spectrum.msLevel,
