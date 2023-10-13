@@ -13,39 +13,20 @@ import org.joda.time.format.PeriodFormat
 @main
 def main(
           mzXMLFile: String,
-          noiseIntensity : Double,
-          ppm_precision : Double   = 5,
           startTime : Double       = 0,
           endTime : Double         = Double.MaxValue
         ) : Unit = {
 
   val processStart:DateTime = DateTime.now()
 
-  val outputFile : String = mzXMLFile.split("/").last.replace(".mzXML",".gluco.ions.txt")
+  val outputFile : String = mzXMLFile.split("/").last.replace(".mzXML",".prec.gluco.ions.txt")
 
   /* get precursor Mz to get MS2 information*/
 
   val listPrecMz =
-    libCandidateIons.precursorMzIons(mzXMLFile, noiseIntensity,startTime, endTime).compile.toList.unsafeRunSync()
-
-  println(s"${listPrecMz.length} precursorMz  min:${listPrecMz.minBy(_.m0).m0} max:${listPrecMz.maxBy(_.m0).m0}")
-
-  val selectedIonsFromMs1: Stream[IO, libCandidateIons.Ion] =
-    libCandidateIons.candidateIonsGeneric(mzXMLFile,noiseIntensity,ppm_precision,startTime,endTime,Some(listPrecMz))
-
-  val sum = selectedIonsFromMs1.map(x => (x.m1-x.m0,x.m2-x.m0)).compile.toList.unsafeRunSync()
-  val sum01 = sum.map(_._1)
-  val mean01 = sum01.sum/sum01.length
-  val std01 = sum.map(x => mean01 - x._1)
-  val sum02 = sum.map(_._2)
-  val mean02 = sum02.sum/sum02.length
-  val std02 = sum.map(x => mean02 - x._2)
-
-  println(s"deltaM0M1  mean: ${mean01}  std: ${std01.sum/std01.length}")
-  println(s"deltaM0M2  mean: ${mean02}  std: ${std02.sum/std02.length}")
-
-  selectedIonsFromMs1
-    .filter(ion => ion.scoreDaughterIons()>0 && ion.scoreNeutralLoss() > 0)
+    libCandidateIons.precursorMzIonsMatchingFragment(mzXMLFile,startTime, endTime)
+  
+  listPrecMz
       .map(ion => ion.toString + "\n")
       .filter(_.trim.nonEmpty)
       .through(text.utf8.encode)

@@ -12,6 +12,7 @@ import scala.xml._
 
 case class SpectrumRequest (mzXMLpath: String) {
 
+  val p_const = Math.pow(10,6)
   def precisionTest(m0 : Double,m1 : Double, ppm_error: Double) : Boolean = Math.abs((m0 - m1) / m0) * p_const <= ppm_error
 
   def msLevel(num : Int) : Stream[IO, Option[Spectrum]] = {

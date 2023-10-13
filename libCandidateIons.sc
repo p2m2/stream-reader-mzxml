@@ -58,7 +58,7 @@ case class Ion(
         mzNL =>
           fragments
             .map(_._1)
-            .exists(mzF => Math.abs(mzNL-mzF)<0.2)).toSeq.length
+            .exists(mzF => Math.abs(mzNL-mzF)<0.1)).toSeq.length
 
 
   def scoreDaughterIons() : Int =
@@ -219,6 +219,40 @@ def precursorMzIons(
     }
 }.flatMap(Stream.emits(_))
 
+
+def precursorMzIonsMatchingFragment(
+                      mzXMLFile: String,
+                      startTime: Double,
+                      endTime: Double,
+                      scoreMinDI : Int = 1, 
+                      scoreMinNL : Int = 1 
+                   )
+: Stream[IO, Ion]  = {
+  SpectrumRequest(mzXMLFile)
+    .msLevel(2)
+    .filter(_.isDefined)
+    .map(_.get)
+    .filter(_.retentionTimeInSeconds.getOrElse(0) >= startTime)
+    .filter(_.retentionTimeInSeconds.getOrElse(Int.MaxValue) <= endTime)
+    .map {
+      (spectrum: Spectrum) => {
+        spectrum.precursorMz.map( (x : PrecursorMz) =>
+          Ion(
+            spectrum.retentionTimeInSeconds.getOrElse(0),
+            spectrum.msLevel,
+            spectrum.num,
+            x.value,x.precursorIntensity.getOrElse(-1.0),0,0,0,0,spectrum.peaks.filter(_._2>0)
+          )
+        )
+      }
+    }
+    .map( (ions : Seq[Ion]) =>
+      ions.filter(
+        ion =>  (ion.scoreDaughterIons()>=scoreMinDI) && (ion.scoreNeutralLoss()>=scoreMinNL)
+      ))
+    .filter(_.nonEmpty)
+}.flatMap(Stream.emits(_))
+
 def fillMS2FragmentIon(
                      mzXMLFile: String,
                      listIons : Seq[Double],
@@ -228,7 +262,6 @@ def fillMS2FragmentIon(
 : Stream[IO, Ion]  = {
       SpectrumRequest(mzXMLFile)
         .msLevel(2)
-        .filter(_.isDefined)
         .filter(_.isDefined)
         .map(_.get)
         .map {
