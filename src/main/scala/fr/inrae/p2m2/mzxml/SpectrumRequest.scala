@@ -12,6 +12,8 @@ import scala.xml._
 
 case class SpectrumRequest (mzXMLpath: String) {
 
+  def precisionTest(m0 : Double,m1 : Double, ppm_error: Double) : Boolean = Math.abs((m0 - m1) / m0) * p_const <= ppm_error
+
   def msLevel(num : Int) : Stream[IO, Option[Spectrum]] = {
     XPathParser.either(s"""//scan[@msLevel == "$num"]""") match {
       case Right(x: XPath) =>
@@ -31,10 +33,10 @@ case class SpectrumRequest (mzXMLpath: String) {
    *
    * @param mz m/z  mass divided by charge number to match
    * @param precursorIntensityMin minimum intensity of the precursor to be recovered
-   * @param tolMz tolerance for mz
+   * @param ppm_precision ppm precision for mz
    * @return
    */
-  def precursorMz(mz : Double, precursorIntensityMin:Double=0.0,tolMz : Double = 0.005): Stream[IO, Option[Spectrum]] = {
+  def precursorMz(mz : Double, precursorIntensityMin:Double=100.0,ppm_precision : Double = 5): Stream[IO, Option[Spectrum]] = {
     XPathParser.either("//scan") match {
       case Right(x : XPath) =>
         val e = XmlStreamRequest(mzXMLpath).requestXpath(x)
@@ -43,9 +45,7 @@ case class SpectrumRequest (mzXMLpath: String) {
             case Some(scan) if scan.precursorMz.nonEmpty =>
               if(scan
                 .precursorMz
-                .exists(precMz =>
-                  (precMz.value > mz - tolMz) &&
-                    (precMz.value < mz + tolMz) &&
+                .exists(precMz => precisionTest(mz,precMz.value,ppm_precision) &&
                     precMz.precursorIntensity.exists(_ > precursorIntensityMin)))
                 Some(scan) else None
             case _ => None

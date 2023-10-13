@@ -1,4 +1,4 @@
-import $cp.`target/scala-2.13/mzXML-stream-assembly-1.0.jar`
+import $cp.target.`scala-2.13`.`mzXML-stream-assembly-1.0.jar`
 import cats.effect.IO
 import fs2.{Stream,Pipe}
 import cats.effect.unsafe.implicits._
@@ -217,6 +217,33 @@ def precursorMzIons(
         )
       }
     }
+}.flatMap(Stream.emits(_))
+
+def fillMS2FragmentIon(
+                     mzXMLFile: String,
+                     listIons : Seq[Double],
+                     noiseIntensity : Double,
+                     ppm_precision: Double
+                   )
+: Stream[IO, Ion]  = {
+      SpectrumRequest(mzXMLFile)
+        .msLevel(2)
+        .filter(_.isDefined)
+        .filter(_.isDefined)
+        .map(_.get)
+        .map {
+          (spectrum: Spectrum) => {
+            spectrum.precursorMz.flatMap((x: PrecursorMz) => x match {
+              case _ if listIons.exists(y => precisionTest(y, x.value, ppm_precision)) => Some(Ion(
+                spectrum.retentionTimeInSeconds.getOrElse(0),
+                spectrum.msLevel,
+                spectrum.num,
+                x.value, x.precursorIntensity.getOrElse(-1.0), 0, 0, 0, 0, spectrum.peaks
+              ))
+              case _ => None
+            })
+          }
+        }
 }.flatMap(Stream.emits(_))
 
 def searchIonsMS1(

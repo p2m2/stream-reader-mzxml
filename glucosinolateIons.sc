@@ -1,9 +1,11 @@
+import $ivy.`com.github.nscala-time::nscala-time:2.32.0`,com.github.nscala_time.time.Imports._
 import cats.effect.IO
 import fs2.text
 import fs2.io.file.{Files, Path}
 import fs2.Stream
 import cats.effect.unsafe.implicits._
 import $file.libCandidateIons
+import org.joda.time.format.PeriodFormat
 
 /* check consecutive ions according a delta ppm and a delta rt */
 /* criteria => maximum intensity of M0 */
@@ -16,6 +18,8 @@ def main(
           startTime : Double       = 0,
           endTime : Double         = Double.MaxValue
         ) : Unit = {
+
+  val processStart:DateTime = DateTime.now()
 
   val outputFile : String = mzXMLFile.split("/").last.replace(".mzXML",".ions.txt")
 
@@ -84,7 +88,7 @@ def main(
   }
 */
   selectedIonsFromMs1
-    .filter(ion => ion.scoreDaughterIons()+ion.scoreNeutralLoss() > 1)
+    .filter(ion => ion.scoreDaughterIons()>0 && ion.scoreNeutralLoss() > 0)
       .map(ion => ion.toString + "\n")
       .filter(_.trim.nonEmpty)
       .through(text.utf8.encode)
@@ -93,8 +97,14 @@ def main(
       .drain
       .unsafeRunSync()
 
+    val processEnd:DateTime = DateTime.now()
+    val elapsed:Interval = processStart to processEnd
+    
+    println(elapsed.toPeriod.toString(PeriodFormat.getDefault))
+
     println(s"****************$outputFile***********************")
     println(" ----- HEADER ----")
     println("RET_TIME;MS_LEVEL;NUM_SCAN;MS0;INT0;MS1;INT1;MS2;INT2")
+
 
 }

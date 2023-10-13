@@ -21,14 +21,9 @@ def main(
 
         val listIons =
                 libCandidateIons
-                .searchIonsMS1(mzXMLFile,Seq(388.0388,388.0399,402.0912,422.0592),ppm_precision,noiseIntensity)
+                .fillMS2FragmentIon(mzXMLFile,Seq(388.0372),noiseIntensity=noiseIntensity,ppm_precision=ppm_precision)
                   .compile.toList.unsafeRunSync()
 
-        val listPrecMz =
-                libCandidateIons.precursorMzIons(mzXMLFile,startTime,endTime,Some(listIons.)).compile.toList.unsafeRunSync()
-
         println(listIons.mkString("\n"))
-
-
 
 }

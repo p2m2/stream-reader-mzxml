@@ -14,9 +14,12 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library name="sbt: sbt-1.9.6">
         <CLASSES>
+          <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/bloop-config_2.12/1.5.5/bloop-config_2.12-1.5.5.jar!/" />
+          <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.5.8/sbt-bloop_2.12_1.0-1.5.8.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/com/eed3si9n/jarjar/jarjar/1.8.1/jarjar-1.8.1.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/com/eed3si9n/jarjarabrams/jarjar-abrams-core_2.12/1.8.1/jarjar-abrams-core_2.12-1.8.1.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/com/eed3si9n/sbt-assembly_2.12_1.0/1.2.0/sbt-assembly-1.2.0.jar!/" />
+          <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/plokhotnyuk/jsoniter-scala/jsoniter-scala-core_2.12/2.4.0/jsoniter-scala-core_2.12-2.4.0.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/sbt/sbt-release_2.12_1.0/1.1.0/sbt-release-1.1.0.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/io/crashbox/sbt-gpg_2.12_1.0/0.2.1/sbt-gpg-0.2.1.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/javax/annotation/jsr250-api/1.0/jsr250-api-1.0.jar!/" />
@@ -139,7 +142,7 @@
   </component>
   <component name="SbtModule">
     <option name="buildForURI" value="file:$MODULE_DIR$/../../" />
-    <option name="imports" value="_root_.sbt.Keys._, _root_.sbt.ScriptedPlugin.autoImport._, _root_.sbt.plugins.JUnitXmlReportPlugin.autoImport._, _root_.sbt.plugins.MiniDependencyTreePlugin.autoImport._, _root_.sbtassembly.AssemblyPlugin.autoImport._, _root_.scoverage.ScoverageSbtPlugin.autoImport._, _root_.io.crashbox.gpg.SbtGpg.autoImport._, _root_.sbtrelease.ReleasePlugin.autoImport._, _root_.sbt._, _root_.sbt.nio.Keys._, _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.sbt.plugins.MiniDependencyTreePlugin, _root_.sbtassembly.AssemblyPlugin, _root_.scoverage.ScoverageSbtPlugin, _root_.io.crashbox.gpg.SbtGpg, _root_.sbtrelease.ReleasePlugin, _root_.scala.xml.{TopScope=&gt;SUB:DOLLARscope}" />
+    <option name="imports" value="_root_.sbt.Keys._, _root_.sbt.ScriptedPlugin.autoImport._, _root_.sbt.plugins.JUnitXmlReportPlugin.autoImport._, _root_.sbt.plugins.MiniDependencyTreePlugin.autoImport._, _root_.bloop.integrations.sbt.BloopPlugin.autoImport._, _root_.sbtassembly.AssemblyPlugin.autoImport._, _root_.scoverage.ScoverageSbtPlugin.autoImport._, _root_.io.crashbox.gpg.SbtGpg.autoImport._, _root_.sbtrelease.ReleasePlugin.autoImport._, _root_.sbt._, _root_.sbt.nio.Keys._, _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.sbt.plugins.MiniDependencyTreePlugin, _root_.bloop.integrations.sbt.BloopPlugin, _root_.sbtassembly.AssemblyPlugin, _root_.scoverage.ScoverageSbtPlugin, _root_.io.crashbox.gpg.SbtGpg, _root_.sbtrelease.ReleasePlugin, _root_.scala.xml.{TopScope=&gt;SUB:DOLLARscope}" />
     <option name="resolvers" value="$USER_HOME$/.ivy2/cache|ivy|true|Local cache, https://repo1.maven.org/maven2/|maven|public" />
   </component>
 </module>

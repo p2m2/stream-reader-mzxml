@@ -28,13 +28,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-effect-testing-utest" % "1.5.0" % Test,
   "com.lihaoyi" %% "utest" % "0.8.1" % Test,
 )
-libraryDependencies += {
-  val version = scalaBinaryVersion.value match {
-    case "2.10" => "1.0.3"
-    case _ ⇒ "1.6.5"
-  }
-  "com.lihaoyi" % "ammonite" % version % "test" cross CrossVersion.full
-}
+
 
 sourceGenerators in Test += Def.task {
   val file = (sourceManaged in Test).value / "amm.scala"
