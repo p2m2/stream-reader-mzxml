@@ -1,5 +1,7 @@
 import $ivy.`com.github.nscala-time::nscala-time:2.32.0`,com.github.nscala_time.time.Imports._
+import $ivy.`org.scala-lang.modules::scala-parallel-collections:1.0.4`
 import $cp.target.`scala-2.13`.`mzXML-stream-assembly-1.0.jar`
+import scala.collection.parallel.CollectionConverters._
 import cats.effect.IO
 import fs2.{Stream,Pipe}
 import cats.effect.unsafe.implicits._
@@ -16,7 +18,7 @@ def main(
           mzXMLFile      : String,
           minIntensity   : Double,   // catch peak of interest obove this threshold.
           noiseIntensity : Double,
-          thresholdDiffIntensity : Double = 1.0, // above 1 %
+          thresholdDiffIntensity : Double = 0.001, // above 1 %
           startTime : Double        = 0,
           endTime : Double          = Double.MaxValue
         ) : Unit = {
@@ -78,7 +80,7 @@ def candidateIonsGeneric(
       .filter(_.retentionTimeInSeconds.getOrElse(Int.MaxValue) <= endTime)
       .map {
         (spectrum: Spectrum) => {
-          spectrum.peaks
+          spectrum.peaks.toList.par
             .flatMap {
               case (mz, intensity) => if (intensity>minIntensity) {
                 val diffMat : Seq[Double] = 
