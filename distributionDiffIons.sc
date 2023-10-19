@@ -16,19 +16,35 @@ def main(
           mzXMLFile      : String,
           minIntensity   : Double,   // catch peak of interest obove this threshold.
           noiseIntensity : Double,
+          thresholdDiffIntensity : Double = 1.0, // above 1 %
           startTime : Double        = 0,
           endTime : Double          = Double.MaxValue
         ) : Unit = {
         
-      val listMat : Map[Double,Int] = 
-      candidateIonsGeneric(mzXMLFile,minIntensity,noiseIntensity,startTime,endTime)
+      val processStart:DateTime = DateTime.now()
+
+      val AlllListMat : List[Map[Double,Int]] = 
+      candidateIonsGeneric(mzXMLFile,minIntensity,noiseIntensity,thresholdDiffIntensity,startTime,endTime)
         .compile
         .toList
         .unsafeRunSync()
-        .fold(Map.empty[Double, Int]) {
+        
+      val processEndInter:DateTime = DateTime.now()
+      val elapsedInter:Interval = processStart to processEndInter
+      println("***************Collect*********************")
+      println(elapsedInter.toPeriod.toString(PeriodFormat.getDefault))
+      println("************************************\n")
+
+      val listMat = AlllListMat.fold(Map.empty[Double, Int]) {
          (count : Map[Double,Int], mzsLocalCount : Map[Double,Int]) =>
            count ++ mzsLocalCount.map{  case (mz,c) => mz -> (count.get(mz).getOrElse(0)+c) }
        }
+      
+      val processEnd:DateTime = DateTime.now()
+      val elapsed:Interval = processStart to processEnd
+      println("***************collect+fold*********************")
+      println(elapsed.toPeriod.toString(PeriodFormat.getDefault))
+      println("************************************\n")
 
       listMat
         .filter(_._2>2)
@@ -37,7 +53,7 @@ def main(
         .sortBy(_._1)
         .reverse
         .map( (count,mzs) => (count,mzs.map(_._1)) )
-        .take(20)
+        .take(40)
         .foreach( (count,mzs) => {
           println(s"Occurence:$count ionsList :${mzs.mkString(",")}")
         })
@@ -48,11 +64,12 @@ def candidateIonsGeneric(
                                mzXMLFile : String,
                                minIntensity: Double,
                                noiseIntensity: Double,
+                               thresholdDiffIntensity : Double,
                                startTime: Double,
                                endTime: Double
                              ) : Stream[IO, Map[Double,Int]]   = {
 
-    val fixCom : Int = 10
+    val fixCom : Int = 100000
     SpectrumRequest(mzXMLFile)
       .msLevel(1)
       .filter(_.isDefined)
@@ -64,8 +81,13 @@ def candidateIonsGeneric(
           spectrum.peaks
             .flatMap {
               case (mz, intensity) => if (intensity>minIntensity) {
-                val diffMat : Seq[Double] = spectrum.peaks.filter(_._2>noiseIntensity).map( mz - _._1)
-                Some(diffMat.map( mz => (mz*fixCom) / fixCom )) // group by decimal precision 
+                val diffMat : Seq[Double] = 
+                  spectrum.peaks
+                          .filter( (m,i) => i>noiseIntensity && i!=0.0 )
+                          .filter((m,i) => (intensity / i)>thresholdDiffIntensity)
+                          .map( mz - _._1 ) // calcul du diff
+                          .map( x => ((x*fixCom).toInt / fixCom.toDouble) )
+                Some(diffMat) 
               } else {
                 None
               }
@@ -77,8 +99,9 @@ def candidateIonsGeneric(
             }
         }
       }
+      /*
       .fold(Map.empty[Double, Int]) {
          (count : Map[Double,Int], mzsLocalCount : Map[Double,Int]) =>
            count ++ mzsLocalCount.map{  case (mz,c) => mz -> (count.get(mz).getOrElse(0)+c) }
-       }
+       }*/
 }
