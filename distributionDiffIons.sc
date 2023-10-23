@@ -12,6 +12,7 @@ import fs2.io.file.{Files, Path}
 import $file.libCandidateIons
 import org.joda.time.format.PeriodFormat
 
+//JAVA_OPTS=-Xmx1500M amm distributionDiffIons.sc 23_0234.mzXML 10000 1000
 
 @main
 def main(
@@ -37,7 +38,7 @@ def main(
       println(elapsedInter.toPeriod.toString(PeriodFormat.getDefault))
       println("************************************\n")
 
-      val listMat = AlllListMat.fold(Map.empty[Double, Int]) {
+      val listMat : Map[Double,Int] = AlllListMat.fold(Map.empty[Double, Int]) {
          (count : Map[Double,Int], mzsLocalCount : Map[Double,Int]) =>
            count ++ mzsLocalCount.map{  case (mz,c) => mz -> (count.get(mz).getOrElse(0)+c) }
        }
@@ -54,11 +55,11 @@ def main(
         .toList
         .sortBy(_._1)
         .reverse
-        .map( (count,mzs) => (count,mzs.map(_._1)) )
+        .map{ case (count : Int,mzs : Map[Double,Int]) => (count,mzs.map(_._1)) }
         .take(40)
-        .foreach( (count,mzs) => {
+        .foreach{ case (count : Int,mzs : Seq[Double]) => {
           println(s"Occurence:$count ionsList :${mzs.mkString(",")}")
-        })
+        }}
 }
 
 
@@ -80,13 +81,14 @@ def candidateIonsGeneric(
       .filter(_.retentionTimeInSeconds.getOrElse(Int.MaxValue) <= endTime)
       .map {
         (spectrum: Spectrum) => {
-          spectrum.peaks.toList.par
+          spectrum.peaks
+            .toList.par
             .flatMap {
               case (mz, intensity) => if (intensity>minIntensity) {
                 val diffMat : Seq[Double] = 
                   spectrum.peaks
-                          .filter( (m,i) => i>noiseIntensity && i!=0.0 )
-                          .filter((m,i) => (intensity / i)>thresholdDiffIntensity)
+                          .filter{ case (m,i) => i>noiseIntensity && i!=0.0 }
+                          .filter{ case (m,i) => (intensity / i)>thresholdDiffIntensity }
                           .map( mz - _._1 ) // calcul du diff
                           .map( x => ((x*fixCom).toInt / fixCom.toDouble) )
                 Some(diffMat) 
