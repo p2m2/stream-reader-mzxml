@@ -1,7 +1,8 @@
+# stream-reader-mzxml
 
+A Scala library specializing in stream processing of mzXML files, based on FS2. 
 
-
-## Using Docker
+## Installation Using Docker
 
 ### 1) First option : build docker image
 
@@ -11,7 +12,9 @@ docker build . -t stream-reader-mzxml
 
 ### 2) Second option : pull image from dockerhub
 
-
+```bash
+docker pull inraep2m2:stream-reader-mzxml
+```
 
 ### run command in the current directory
 
