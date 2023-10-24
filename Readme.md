@@ -6,6 +6,9 @@
 sbt assembly
 ```
 
+java -cp ./assembly/pack.jar MainDistributionIntensityIons
+java -cp ./assembly/pack.jar MainDistributionMzIons
+
 ### Precursor Mz search
 
 ```scala
