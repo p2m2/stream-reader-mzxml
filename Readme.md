@@ -2,51 +2,65 @@
 
 A Scala library specializing in stream processing of mzXML files, based on FS2. 
 
-## Installation Using Docker
+### mzXML specifications
+
+https://sashimi.sourceforge.net/schema_revision/mzXML_2.1/Doc/mzXML_2.0_tutorial.pdf
+
+## Installation using Docker
 
 ### 1) First option : build docker image
 
 ```bash
-docker build . -t stream-reader-mzxml
+docker build . -t p2m2/stream-reader-mzxml
 ```
 
 ### 2) Second option : pull image from dockerhub
 
 ```bash
-docker pull inraep2m2:stream-reader-mzxml
+docker pull ghcr.io/p2m2/stream-reader-mzxml
 ```
 
 ### run command in the current directory
 
 ```bash
-docker run -v $(pwd):/data stream-reader-mzxml MainDistributionIntensityIons /data/myfile.mzXML
+docker run -v $(pwd):/data p2m2/stream-reader-mzxml <MainClass> /data/myfile.mzXML
 ```
 
 ### run command in specific path
 
-docker run -v <path-where-is-mzXMLfile>:/data stream-reader-mzxml MainDistributionIntensityIons /data/myfile.mzXML
+```bash
+docker run -v <path-where-is-mzXMLfile>:/data p2m2/stream-reader-mzxml <MainClass> /data/myfile.mzXML
+```
 
-### build jar
+## Installation using sbt
 
 ```bash
 sbt assembly
 ```
-### Number of ions by intensity thresholds
+### run command 
+
+```bash
+java -cp ./assembly/pack.jar <MainClass> 
+```
+| MainClass  | Arguments | Description          | 
+| :--------------- |:---------------|:---------------|
+| MainDistributionIntensityIons  |  | Number of ions by intensity thresholds        | 
+| MainDistributionMzIons  | *Minimum intensity*| Occurrences of the most frequent Mz (Ions)             |  
+| MainDistributionDiffMzIons | *Minimum intensity of peaks of interest* | Gives the occurrences of the difference between the Mz (mass on charge) of interest and the other ions in the same mass spectrum to detect the formation of adducts. |
+
+
+### Examples
 
 ```bash
 java -cp ./assembly/pack.jar MainDistributionIntensityIons
 ```
 
-### Occurrences of the most frequent Mz (Ions)
-
 ```bash
 java -cp ./assembly/pack.jar MainDistributionMzIons
 ```
 
-### Gives the occurrences of the difference between the Mz (mass on charge) of interest and the other ions in the same mass spectrum to detect the formation of adducts.
-
 ```bash
-java -cp ./assembly/pack.jar MainDistributionDiffMzIons
+java -cp ./assembly/pack.jar MainDistributionDiffMzIons 50000
 ```
 
 ## ammonite example
@@ -172,14 +186,4 @@ amm glucosinolateIons.sc ../mzxml-glucosinolate-analyser/src/test/resources/2018
 ```
 
 
-## test
-
-```bash
-sbt "run ./src/test/resources/LTQ_Orbitrap_precision32.mzXML"
-```
-
-
-## specifications
-
-https://sashimi.sourceforge.net/schema_revision/mzXML_2.1/Doc/mzXML_2.0_tutorial.pdf
 
