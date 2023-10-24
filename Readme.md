@@ -5,9 +5,22 @@
 ```bash
 sbt assembly
 ```
-
+### Number of ions by intensity thresholds
+```bash
 java -cp ./assembly/pack.jar MainDistributionIntensityIons
+```
+
+### Occurrences of the most frequent Mz (Ions)
+
+```bash
 java -cp ./assembly/pack.jar MainDistributionMzIons
+```
+
+### Gives the occurrences of the difference between the Mz (mass on charge) of interest and the other ions in the same mass spectrum to detect the formation of adducts.
+
+```bash
+java -cp ./assembly/pack.jar MainDistributionDiffMzIons
+```
 
 ### Precursor Mz search
 

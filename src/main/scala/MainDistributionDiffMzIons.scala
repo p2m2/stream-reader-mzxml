@@ -3,24 +3,26 @@ import cats.effect.{ExitCode, IO, IOApp}
 import com.github.nscala_time.time.Imports.{DateTime, Interval, richReadableInstant}
 import fr.inrae.p2m2.mzxml.{Spectrum, SpectrumRequest}
 import org.joda.time.format.PeriodFormat
+import scala.collection.parallel.CollectionConverters._
 
-object MainDistributionMzIons extends IOApp {
+object MainDistributionDiffMzIons extends IOApp {
 
   import scopt.OParser
 
   private case class Config(
-                             mzFile: Option[String]  = None,
+                             mzFile: Option[String] = None,
                              startRT: Option[Double] = None,
-                             endRT: Option[Double]   = None,
+                             endRT: Option[Double] = None,
                              minIntensity : Double   = 1000,
+                             thresholdDiffIntensity : Double = 0.001, // 1 %
                            )
 
   private val builder = OParser.builder[Config]
   private val parser1 = {
     import builder._
     OParser.sequence(
-      programName("MainDistributionMzIons"),
-      head("MainDistributionMzIons", "1.0"),
+      programName("MainDistributionIntensityIons"),
+      head("MainDistributionIntensityIons", "1.0"),
       opt[Double]('s', "startRT")
         .optional()
         .action((x, c) => c.copy(startRT = Some(x)))
@@ -40,9 +42,7 @@ object MainDistributionMzIons extends IOApp {
       checkConfig(_ => success)
     )
   }
-
-  private val fixCom: Int = 100000
-
+  val fixCom: Int = 100000
   def run(args: List[String]): IO[ExitCode] = {
     OParser.parse(parser1, args, Config()) match {
       case Some(config) =>
@@ -65,16 +65,26 @@ object MainDistributionMzIons extends IOApp {
                 .map {
                   (spectrum: Spectrum) => {
                     spectrum.peaks
+                      .toList.par
                       .flatMap {
                         case (mz, intensity) => if (intensity > config.minIntensity) {
-                          val value: Double = (mz * fixCom).toInt / fixCom.toDouble
-                          Some(value)
+                          val diffMat: Seq[Double] =
+                            spectrum.peaks
+                              .filter { case (_, i) => i > 0.0 }
+                              .filter { case (_, i) => (intensity / i) > config.thresholdDiffIntensity }
+                              .map(mz - _._1) // calcul du diff
+                              .map(x => (x * fixCom).toInt / fixCom.toDouble)
+                          Some(diffMat)
                         } else {
                           None
                         }
                       }
                       .foldLeft(Map[Double, Int]()) {
-                        (countAccumulator, mz) => countAccumulator + (mz -> (countAccumulator.getOrElse(mz, 0) + 1))
+                        (countAccumulator, mzs) =>
+                          mzs
+                            .map(mz => {
+                              mz -> (countAccumulator.getOrElse(mz, 0) + 1)
+                            }).toMap
                       }
                   }
                 }.compile.toList.unsafeRunSync()
@@ -94,7 +104,9 @@ object MainDistributionMzIons extends IOApp {
               val elapsed: Interval = processStart to processEnd
               println(s" collect/fold     :: ${elapsed.toPeriod.toString(PeriodFormat.getDefault)}")
               println
-              println("*************** Occurrences of the most frequent Mz (Ions) *********************")
+              println("*************** Gives the occurrences of the difference between the Mz (mass on charge) of " +
+                "interest and the other ions in the same mass spectrum to detect the formation of adducts. " +
+                "*********************")
               println
               listMat
                 .filter(_._2 > 2)

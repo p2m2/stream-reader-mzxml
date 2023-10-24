@@ -26,6 +26,7 @@ libraryDependencies ++= Seq(
   "org.gnieh" %%"fs2-data-xml"%"1.8.0",
   "com.github.marklister" %% "base64" % "0.3.0",
   "com.github.nscala-time" %% "nscala-time" %"2.32.0",
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4",
   "org.typelevel" %% "cats-effect-testing-utest" % "1.5.0" % Test,
   "com.lihaoyi" %% "utest" % "0.8.1" % Test,
 )

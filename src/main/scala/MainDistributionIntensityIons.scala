@@ -100,7 +100,7 @@ object MainDistributionIntensityIons extends IOApp {
                 .take(listThresholdValues.length)
                 .filter ( obj => obj._2>0 )
                 .foreach { case (intensity : Double, count: Int) =>
-                  println(f"$count% 12d ions ions above intensity threshold ${intensity}% 15f ")
+                  println(f"$count% 12d ions ions above intensity threshold ${intensity}% 12.0f ")
                 }
               println
           }.as(ExitCode.Success)
