@@ -1,12 +1,27 @@
 
-## ammonite example
+
 
 ## Using Docker
 
+### 1) First option : build docker image
+
 ```bash
 docker build . -t stream-reader-mzxml
-docker run -v /Users/andy/mydata:/mnt/mydata stream-reader-mzxml
 ```
+
+### 2) Second option : pull image from dockerhub
+
+
+
+### run command in the current directory
+
+```bash
+docker run -v $(pwd):/data stream-reader-mzxml MainDistributionIntensityIons /data/myfile.mzXML
+```
+
+### run command in specific path
+
+docker run -v <path-where-is-mzXMLfile>:/data stream-reader-mzxml MainDistributionIntensityIons /data/myfile.mzXML
 
 ### build jar
 
@@ -30,6 +45,8 @@ java -cp ./assembly/pack.jar MainDistributionMzIons
 ```bash
 java -cp ./assembly/pack.jar MainDistributionDiffMzIons
 ```
+
+## ammonite example
 
 ### Precursor Mz search
 
