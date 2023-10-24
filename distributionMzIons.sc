@@ -16,18 +16,17 @@ import org.joda.time.format.PeriodFormat
 
 @main
 def main(
-          mzXMLFile      : String,
-          minIntensity   : Double,   // catch peak of interest obove this threshold.
-          noiseIntensity : Double,
-          thresholdDiffIntensity : Double = 0.001, // above 1 %
-          startTime : Double        = 0,
-          endTime : Double          = Double.MaxValue
+          typeDistribution           : TypeDistribution, 
+          mzXMLFile                  : String,
+          minIntensity               : Double,   // catch peak of interest obove this threshold.
+          startTime                  : Double        = 0,
+          endTime                    : Double        = Double.MaxValue
         ) : Unit = {
         
       val processStart:DateTime = DateTime.now()
 
       val AlllListMat : List[Map[Double,Int]] = 
-      candidateIonsGeneric(mzXMLFile,minIntensity,noiseIntensity,thresholdDiffIntensity,startTime,endTime)
+      countMzLevel1Ions(mzXMLFile,minIntensity,startTime,endTime)
         .compile
         .toList
         .unsafeRunSync()
@@ -63,11 +62,9 @@ def main(
 }
 
 
-def candidateIonsGeneric(
+def countMzLevel1Ions(
                                mzXMLFile : String,
                                minIntensity: Double,
-                               noiseIntensity: Double,
-                               thresholdDiffIntensity : Double,
                                startTime: Double,
                                endTime: Double
                              ) : Stream[IO, Map[Double,Int]]   = {
@@ -82,30 +79,17 @@ def candidateIonsGeneric(
       .map {
         (spectrum: Spectrum) => {
           spectrum.peaks
-            .toList.par
             .flatMap {
               case (mz, intensity) => if (intensity>minIntensity) {
-                val diffMat : Seq[Double] = 
-                  spectrum.peaks
-                          .filter{ case (m,i) => i>noiseIntensity && i!=0.0 }
-                          .filter{ case (m,i) => (intensity / i)>thresholdDiffIntensity }
-                          .map( mz - _._1 ) // calcul du diff
-                          .map( x => ((x*fixCom).toInt / fixCom.toDouble) )
-                Some(diffMat) 
+                val value : Double = (mz*fixCom).toInt / fixCom.toDouble
+                Some(value) 
               } else {
                 None
               }
             }
             .foldLeft(Map[Double,Int]()) {
-                (countAccumulator, mzs) =>
-                mzs
-                .map( mz => { mz -> (countAccumulator.get(mz).getOrElse(0)+1)}).toMap
+                (countAccumulator, mz) => countAccumulator + (mz -> (countAccumulator.get(mz).getOrElse(0)+1))
             }
         }
       }
-      /*
-      .fold(Map.empty[Double, Int]) {
-         (count : Map[Double,Int], mzsLocalCount : Map[Double,Int]) =>
-           count ++ mzsLocalCount.map{  case (mz,c) => mz -> (count.get(mz).getOrElse(0)+c) }
-       }*/
 }
