@@ -1,11 +1,20 @@
 
 ## ammonite example
 
+## Using Docker
+
+```bash
+docker build . -t stream-reader-mzxml
+docker run -v /Users/andy/mydata:/mnt/mydata stream-reader-mzxml
+```
+
 ### build jar
+
 ```bash
 sbt assembly
 ```
 ### Number of ions by intensity thresholds
+
 ```bash
 java -cp ./assembly/pack.jar MainDistributionIntensityIons
 ```
