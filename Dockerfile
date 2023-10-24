@@ -6,6 +6,6 @@ ENV MILL_VERSION="0.10.4"
 
 COPY . /stream-reader-mzxml/
 WORKDIR /stream-reader-mzxml
-RUN mkdir assembly && sbt assembly
+RUN sbt assembly
 
 CMD ["java","-cp","./assembly/pack.jar"]
