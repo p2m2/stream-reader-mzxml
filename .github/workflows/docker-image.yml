@@ -2,9 +2,8 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - '*'
 
 jobs:
 
@@ -21,9 +20,9 @@ jobs:
       run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker image
       run: |
-        docker build . --file Dockerfile --tag inraep2m2/stream-reader-mzxml:$(date +%s) 
+        docker build . --file Dockerfile --tag inraep2m2/stream-reader-mzxml:${{  github.ref_name }} 
         docker build . --file Dockerfile --tag inraep2m2/stream-reader-mzxml:latest
     - name : Docker Push
       run: |
-        docker push inraep2m2/stream-reader-mzxml:$(date +%s)
+        docker push inraep2m2/stream-reader-mzxml:${{  github.ref_name }}
         docker push inraep2m2/stream-reader-mzxml:latest
