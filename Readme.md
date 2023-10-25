@@ -17,19 +17,19 @@ docker build . -t p2m2/stream-reader-mzxml
 ### 2) Second option : pull image from dockerhub
 
 ```bash
-docker pull ghcr.io/p2m2/stream-reader-mzxml
+docker pull inraep2m2/stream-reader-mzxml
 ```
 
 ### run command in the current directory
 
 ```bash
-docker run -v $(pwd):/data p2m2/stream-reader-mzxml <MainClass> /data/myfile.mzXML
+docker run -v $(pwd):/data inraep2m2/stream-reader-mzxml <MainClass> /data/myfile.mzXML
 ```
 
 ### run command in specific path
 
 ```bash
-docker run -v <path-where-is-mzXMLfile>:/data p2m2/stream-reader-mzxml <MainClass> /data/myfile.mzXML
+docker run -v <path-where-is-mzXMLfile>:/data inraep2m2/stream-reader-mzxml <MainClass> /data/myfile.mzXML
 ```
 
 ## Installation using sbt
@@ -60,7 +60,7 @@ java -cp ./assembly/pack.jar MainDistributionMzIons
 ```
 
 ```bash
-java -cp ./assembly/pack.jar MainDistributionDiffMzIons 50000
+java -cp ./assembly/pack.jar MainDistributionDiffMzIons -i 50000
 ```
 
 ## ammonite example
