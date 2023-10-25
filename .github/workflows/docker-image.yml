@@ -20,6 +20,10 @@ jobs:
         DOCKER_PASSWORD: ${{secrets.DOCKERHUB_PASSWORD}}
       run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag inraep2m2/stream-reader-mzxml:$(date +%s)
+      run: |
+        docker build . --file Dockerfile --tag inraep2m2/stream-reader-mzxml:$(date +%s) 
+        docker build . --file Dockerfile --tag inraep2m2/stream-reader-mzxml:latest
     - name : Docker Push
-      run: docker push inraep2m2/stream-reader-mzxml:latest
+      run: |
+        docker push inraep2m2/stream-reader-mzxml:$(date +%s)
+        docker push inraep2m2/stream-reader-mzxml:latest
