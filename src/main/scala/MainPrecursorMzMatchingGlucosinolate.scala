@@ -16,8 +16,7 @@ object MainPrecursorMzMatchingGlucosinolate extends IOApp {
                              mzFile: Option[String] = None,
                              startRT: Option[Double] = None,
                              endRT: Option[Double] = None,
-                             minIntensity : Double   = 1000,
-                             thresholdDiffIntensity : Double = 0.001, // 1 %
+                             minIntensity : Double   = 1000
                            )
 
   private val builder = OParser.builder[Config]

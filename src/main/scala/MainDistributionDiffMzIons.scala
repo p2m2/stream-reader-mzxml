@@ -35,6 +35,11 @@ object MainDistributionDiffMzIons extends IOApp {
         .optional()
         .action((x, c) => c.copy(minIntensity = x))
         .text(s"Minimum intensity threshold selecting the ions of interest"),
+      opt[Double]('t', "thresholdDiffIntensity")
+        .optional()
+        .action((x, c) => c.copy(thresholdDiffIntensity = x))
+        .text(s"tolerated threshold of intensity ratio between the ion " +
+          s"of interest and the adduct - default:${Config().thresholdDiffIntensity}"),
       arg[String]("<file>")
         .action((x, c) => c.copy(mzFile = Some(x))),
       help("help").text("prints this usage text"),
