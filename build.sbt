@@ -1,8 +1,8 @@
 import sbt.Test
-// The simplest possible sbt build file is just one line:
 
+//https://repo1.maven.org/maven2/com/github/p2m2/
 scalaVersion := "2.13.12"
-crossScalaVersions := List("2.13.12", "2.12.18")
+crossScalaVersions := List("2.13.12")
 name := "stream-reader-mzxml"
 organization := "com.github.p2m2"
 
