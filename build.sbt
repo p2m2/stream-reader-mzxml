@@ -2,9 +2,9 @@ import sbt.Test
 // The simplest possible sbt build file is just one line:
 
 scalaVersion := "2.13.12"
-name := "mzXML-stream"
+name := "stream-reader-mzxml"
 organization := "com.github.p2m2"
-version := "1.0"
+
 scmInfo := Some(
   ScmInfo(
     url("https://github.com/p2m2/stream-reader-mzxml"),
@@ -14,8 +14,23 @@ scmInfo := Some(
 developers := List(
   Developer("ofilangi", "Olivier Filangi", "olivier.filangi@inrae.fr",url("https://github.com/ofilangi"))
 )
+licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/mit-license.php"))
+homepage := Some(url("https://github.com/p2m2/stream-reader-mzxml"))
 
 //scalacOptions += "-opt:inline,simplify-jumps,compact-locals,nullness-tracking"
+/*
+ThisBuild / scalacOptions ++= Seq(
+  "-release",
+  "8",
+  "-deprecation",
+  "-feature"
+)
+
+ThisBuild / compile / javacOptions ++= Seq(
+  "-g", // debug symbols
+  "--release",
+  "8"
+)*/
 
 libraryDependencies ++= Seq(
   "com.github.scopt" %% "scopt" % "4.1.0",
@@ -31,6 +46,11 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %% "utest" % "0.8.1" % Test,
 )
 
+
+publishTo := sonatypePublishToBundle.value
+// For all Sonatype accounts created from February 2021
+sonatypeCredentialHost := "s01.oss.sonatype.org"
+/*
 publishTo := {
   if (isSnapshot.value)
     Some("Sonatype Snapshots Nexus" at "https://oss.sonatype.org/content/repositories/snapshots")
@@ -41,6 +61,7 @@ publishConfiguration := publishConfiguration.value.withOverwrite(true)
 publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 pomIncludeRepository := { _ => false }
 publishMavenStyle := true
+*/
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 

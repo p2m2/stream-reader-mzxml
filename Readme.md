@@ -1,4 +1,5 @@
 # stream-reader-mzxml
+[![Build Status](https://github.com/p2m2/stream-reader-mzxml/workflows/release/badge.svg)](https://github.com/p2m2/stream-reader-mzxml/actions?query=workflow%3Arelease)
 
 A Scala library specializing in stream processing of mzXML files, based on FS2. 
 
