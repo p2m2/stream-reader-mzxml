@@ -43,11 +43,11 @@ sbt assembly
 ```bash
 java -cp ./assembly/pack.jar <MainClass> 
 ```
-| MainClass  | Arguments | Description                                                                                                                                                          | 
-| :--------------- |:---------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| MainDistributionIntensityIons  |  | Number of ions by intensity thresholds                                                                                                                               | 
-| MainDistributionMzIons  | *Minimum intensity*| Occurrences of the most frequent Mz (Ions)                                                                                                                           |  
-| MainDistributionDiffMzIons | *Minimum intensity of peaks of interest* | Gives the occurrences of the difference between the Mz (mass on charge) of interest and the other ions in the same mass spectrum to detect the formation of adducts. |
+| MainClass                            | Arguments | Description                                                                                                                                                          | 
+|:-------------------------------------|:---------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| MainDistributionIntensityIons        |  | Number of ions by intensity thresholds                                                                                                                               | 
+| MainDistributionMzIons               | *Minimum intensity*| Occurrences of the most frequent Mz (Ions)                                                                                                                           |  
+| MainDistributionDiffMzIons           | *Minimum intensity of peaks of interest* | Gives the occurrences of the difference between the Mz (mass on charge) of interest and the other ions in the same mass spectrum to detect the formation of adducts. |
 | MainPrecursorMzMatchingGlucosinolate | | Selects the precursorMz corresponding to an MS2 signature (diagnostic neutral and ion losses)                                                                        |
 
 ### Examples
