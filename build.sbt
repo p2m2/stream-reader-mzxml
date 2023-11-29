@@ -48,7 +48,7 @@ libraryDependencies ++= Seq(
 
 // For all Sonatype accounts created from February 2021
 sonatypeCredentialHost := "s01.oss.sonatype.org"
-
+/*
 publishTo := {
   if (isSnapshot.value)
     Some("Sonatype Snapshots Nexus" at "https://oss.sonatype.org/content/repositories/snapshots")
@@ -59,12 +59,12 @@ publishConfiguration := publishConfiguration.value.withOverwrite(true)
 publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 pomIncludeRepository := { _ => false }
 publishMavenStyle := true
+*/
 
-/*
 publishTo := sonatypePublishToBundle.value
 pomIncludeRepository := { _ => false }
 publishMavenStyle := true
-*/
+
 testFrameworks += new TestFramework("utest.runner.Framework")
 
 assembly / target := file("assembly")
