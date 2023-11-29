@@ -47,7 +47,17 @@ libraryDependencies ++= Seq(
 )
 
 // For all Sonatype accounts created from February 2021
-sonatypeCredentialHost := "s01.oss.sonatype.org"
+//sonatypeCredentialHost := "s01.oss.sonatype.org"
+/*
+resolvers ++= Resolver.sonatypeOssRepos("staging")
+
+resolvers +=
+  "Sonatype OSS Releases" at "https://s01.oss.sonatype.org/content/repositories/releases"
+
+resolvers += Resolver.sonatypeRepo("snapshots")
+resolvers +=
+  "Sonatype OSS Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots"
+*/
 /*
 publishTo := {
   if (isSnapshot.value)
@@ -61,9 +71,9 @@ pomIncludeRepository := { _ => false }
 publishMavenStyle := true
 */
 
-publishTo := sonatypePublishToBundle.value
+//publishTo := sonatypePublishToBundle.value
 pomIncludeRepository := { _ => false }
-publishMavenStyle := true
+//publishMavenStyle := true
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 
