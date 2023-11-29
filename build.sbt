@@ -2,6 +2,7 @@ import sbt.Test
 // The simplest possible sbt build file is just one line:
 
 scalaVersion := "2.13.12"
+crossScalaVersions := List("2.13.12", "2.12.18")
 name := "stream-reader-mzxml"
 organization := "com.github.p2m2"
 
@@ -45,35 +46,6 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-effect-testing-utest" % "1.5.0" % Test,
   "com.lihaoyi" %% "utest" % "0.8.1" % Test,
 )
-
-// For all Sonatype accounts created from February 2021
-//sonatypeCredentialHost := "s01.oss.sonatype.org"
-/*
-resolvers ++= Resolver.sonatypeOssRepos("staging")
-
-resolvers +=
-  "Sonatype OSS Releases" at "https://s01.oss.sonatype.org/content/repositories/releases"
-
-resolvers += Resolver.sonatypeRepo("snapshots")
-resolvers +=
-  "Sonatype OSS Snapshots" at "https://s01.oss.sonatype.org/content/repositories/snapshots"
-*/
-/*
-publishTo := {
-  if (isSnapshot.value)
-    Some("Sonatype Snapshots Nexus" at "https://oss.sonatype.org/content/repositories/snapshots")
-  else
-    Some("Sonatype Snapshots Nexus" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
-}
-publishConfiguration := publishConfiguration.value.withOverwrite(true)
-publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
-pomIncludeRepository := { _ => false }
-publishMavenStyle := true
-*/
-
-//publishTo := sonatypePublishToBundle.value
-pomIncludeRepository := { _ => false }
-//publishMavenStyle := true
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 
