@@ -46,8 +46,6 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %% "utest" % "0.8.1" % Test,
 )
 
-
-publishTo := sonatypePublishToBundle.value
 // For all Sonatype accounts created from February 2021
 sonatypeCredentialHost := "s01.oss.sonatype.org"
 /*
@@ -62,6 +60,9 @@ publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 pomIncludeRepository := { _ => false }
 publishMavenStyle := true
 */
+publishTo := sonatypePublishToBundle.value
+pomIncludeRepository := { _ => false }
+publishMavenStyle := true
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 
