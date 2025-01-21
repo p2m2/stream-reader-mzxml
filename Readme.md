@@ -69,7 +69,7 @@ java -cp ./assembly/pack.jar MainDistributionDiffMzIons -i 50000
 ### Precursor Mz search
 
 ```scala
-import $cp.`target/scala-2.13/mzXML-stream-assembly-1.0.jar`
+import $cp.`assembly/pack.jar`
 import cats.effect.{IO, IOApp}
 import fs2.{Stream, text, Pipe}
 import fs2.io.file.{Files, Path}
@@ -111,7 +111,7 @@ println(outputFile)
 ###
 
 ```scala
-import $cp.`target/scala-2.13/mzXML-stream-assembly-1.0.jar`
+import $cp.`assembly/pack.jar`
 import cats.effect.{IO, IOApp}
 import fs2.{Stream, text, Pipe}
 import fs2.io.file.{Files, Path}
