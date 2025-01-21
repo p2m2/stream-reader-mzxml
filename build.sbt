@@ -39,7 +39,7 @@ libraryDependencies ++= Seq(
   "co.fs2" %% "fs2-core" % "3.11.0",
   "co.fs2" %% "fs2-io" % "3.11.0",
   "co.fs2" %% "fs2-core" % "3.11.0",
-  "org.gnieh" %%"fs2-data-xml"%"1.11.2",
+  "org.gnieh" %%"fs2-data-xml"%"1.8.0",
   "com.github.marklister" %% "base64" % "0.3.0",
   "com.github.nscala-time" %% "nscala-time" %"3.0.0",
   "org.scala-lang.modules" %% "scala-parallel-collections" % "1.2.0",
