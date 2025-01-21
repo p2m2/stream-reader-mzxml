@@ -36,15 +36,15 @@ ThisBuild / compile / javacOptions ++= Seq(
 libraryDependencies ++= Seq(
   "com.github.scopt" %% "scopt" % "4.1.0",
   "com.lucidchart" %% "xtract" % "2.3.0",
-  "co.fs2" %% "fs2-core" % "3.9.2",
-  "co.fs2" %% "fs2-io" % "3.9.2",
-  "co.fs2" %% "fs2-core" % "3.9.2",
-  "org.gnieh" %%"fs2-data-xml"%"1.8.0",
+  "co.fs2" %% "fs2-core" % "3.11.0",
+  "co.fs2" %% "fs2-io" % "3.11.0",
+  "co.fs2" %% "fs2-core" % "3.11.0",
+  "org.gnieh" %%"fs2-data-xml"%"1.11.2",
   "com.github.marklister" %% "base64" % "0.3.0",
-  "com.github.nscala-time" %% "nscala-time" %"2.32.0",
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4",
-  "org.typelevel" %% "cats-effect-testing-utest" % "1.5.0" % Test,
-  "com.lihaoyi" %% "utest" % "0.8.1" % Test,
+  "com.github.nscala-time" %% "nscala-time" %"3.0.0",
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.2.0",
+  "org.typelevel" %% "cats-effect-testing-utest" % "1.6.0" % Test,
+  "com.lihaoyi" %% "utest" % "0.8.5" % Test,
 )
 
 testFrameworks += new TestFramework("utest.runner.Framework")
