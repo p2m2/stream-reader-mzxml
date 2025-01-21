@@ -64,6 +64,10 @@ java -cp ./assembly/pack.jar MainDistributionMzIons
 java -cp ./assembly/pack.jar MainDistributionDiffMzIons -i 50000
 ```
 
+```bash
+java -cp ./assembly/pack.jar MainGlucosinolates src/test/resources/Orbitrap_Exploris_240_precision64.mzXML --output test.out --startRT 0   --endRT 2   --minIntensity 7500   --deltaMp0Mp2 1.9958   --carbonMin 3   --carbonMax 35   --sulfurMin 1.5   --sulfurMax 5   --precisionMz 0.0001
+```
+
 ## ammonite example
 
 ### Precursor Mz search
